@@ -302,8 +302,6 @@ const ListingPage = () => {
     setShareModalOpen(true);
   };
 
- 
-
   const getShareUrl = () => {
     return `${window.location.origin}/mansion/${property.reference}`;
   };
@@ -353,9 +351,24 @@ const ListingPage = () => {
 
   const isCollectible = property.propertytype === "Luxury Collectibles";
 
+  // Determine the location text for Luxury Collectibles
+  let locationText = "";
+  if (isCollectible) {
+    const community = property.community || property.location || "N/A";
+    const country = property.country || "N/A";
+    locationText = community !== "N/A" || country !== "N/A" ? `${community}, ${country}` : "Location unavailable";
+  } else {
+    locationText = `${property.community || "N/A"}, ${property.propertyaddress || "N/A"}, ${property.subcommunity || "N/A"}`;
+  }
+
+  // Fallback for Luxury Collectibles if location is unavailable
+  const fallbackText = isCollectible && locationText === "Location unavailable"
+    ? property.category || property.description?.substring(0, 50) || "Luxury Item"
+    : null;
+
   return (
     <>
-      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 bg-[#f5f5f5] min-h-screen font-inter">
+      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 bg-white min-h-screen font-inter">
         {/* Header with Logo and Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
           <img src={logo} className="w-[250px] md:w-[400px] mb-6 md:mb-0" alt="logo" />
@@ -492,18 +505,17 @@ const ListingPage = () => {
         {/* Property Title and Summary */}
         <div className="flex flex-col md:space-x-6 mt-4 py-6 md:mt-6 space-x-2 md:space-y-0 text-center">
           <h3 className="text-3xl pt-8 font-playfair text-[#000000] mb-8">
-            {property.title}
+            {property.title || "Untitled Property"}
           </h3>
           <p className="text-base font-inter">
             {isCollectible
-              ? `${property.category} | ${property.propertytype}`
-              : `${property.propertytype} | ${property.bedrooms} beds | ${property.bathrooms} baths | ${property.size} sq. ft. | ${property.builtuparea} sq. ft. plot`}
+              ? `${property.category || "Luxury Item"} | ${property.propertytype}`
+              : `${property.propertytype} | ${property.bedrooms || 0} beds | ${property.bathrooms || 0} baths | ${property.size || 0} sq. ft. | ${property.builtuparea || 0} sq. ft. plot`}
           </p>
         </div>
 
         {/* Hero Image with ImageGallery */}
-       {/* Hero Image with ImageGallery */}
-       <div className="relative w-full h-[280px] md:h-screen">
+        <div className="relative w-full h-[280px] md:h-screen">
           <img
             src={property.images?.[0]}
             alt="Background"
@@ -518,16 +530,16 @@ const ListingPage = () => {
           <div className="w-full lg:w-7/12">
             {isCollectible ? (
               <div className="bg-white shadow-md p-6 mb-6">
-                <h1 className="text-3xl font-playfair text-[#00603A]">{property.title}</h1>
+                <h1 className="text-3xl font-playfair text-[#00603A]">{property.title || "Untitled Collectible"}</h1>
                 <p className="text-sm font-inter mt-4 text-gray-600">
-                  {property.category} | {property.subTitle}
+                  {fallbackText || locationText}
                 </p>
-                <p className="text-3xl font-inter text-[#00603A] mt-4">AED {property.price}</p>
-                <p className="text-sm text-gray-500 mt-2 font-inter">PROPERTY REF: {property.reference}</p>
+                <p className="text-3xl font-inter text-[#00603A] mt-4">AED {property.price || "N/A"}</p>
+                <p className="text-sm text-gray-500 mt-2 font-inter">PROPERTY REF: {property.reference || "N/A"}</p>
                 <p className="text-base text-gray-700 mt-4 leading-7 font-inter w-full">
                   {showFullDescription
                     ? property.description
-                    : `${property.description.substring(0, 300)}...`}
+                    : `${property.description?.substring(0, 300) || "No description available"}...`}
                 </p>
                 <button
                   onClick={() => setShowFullDescription(!showFullDescription)}
@@ -535,6 +547,25 @@ const ListingPage = () => {
                 >
                   {showFullDescription ? "Show less" : "Show full description"}
                 </button>
+                {/* Collectible Details in place of Features & Amenities */}
+                <div className="border-t border-b border-[#00603A] mt-8 pb-8 py-6">
+                  <h1 className="text-3xl font-playfair text-[#00603A]">
+                    Collectible Details
+                  </h1>
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-600 font-inter">
+                      <strong>Category:</strong> {property.category || "Luxury Item"}
+                    </p>
+                    {property.subtitle && (
+                      <p className="text-sm text-gray-600 font-inter mt-2">
+                        <strong>Subtitle:</strong> {property.subtitle}
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-600 font-inter mt-2">
+                      <strong>Status:</strong> {property.status || "For Sale"}
+                    </p>
+                  </div>
+                </div>
                 {property.videoLink && (
                   <div className="mt-8">
                     <h2 className="text-2xl font-playfair text-[#00603A] mb-4">Video</h2>
@@ -550,17 +581,17 @@ const ListingPage = () => {
             ) : (
               <>
                 <h1 className="text-3xl -mt-4 font-playfair text-[#00603A]">
-                  {property.title}
+                  {property.title || "Untitled Property"}
                 </h1>
                 <p className="text-sm font-inter mt-4 text-gray-600">
-                  {property.community} | {property.propertyaddress} | {property.subcommunity}
+                  {locationText}
                 </p>
-                <p className="text-3xl font-inter text-[#00603A] mt-4">AED {property.price}</p>
-                <p className="text-sm text-gray-500 mt-2 font-inter">PROPERTY REF: {property.reference}</p>
+                <p className="text-3xl font-inter text-[#00603A] mt-4">AED {property.price || "N/A"}</p>
+                <p className="text-sm text-gray-500 mt-2 font-inter">PROPERTY REF: {property.reference || "N/A"}</p>
                 <p className="text-base text-gray-700 mt-4 leading-7 font-inter w-full md:w-10/12">
                   {showFullDescription
                     ? property.description
-                    : `${property.description.substring(0, 300)}...`}
+                    : `${property.description?.substring(0, 300) || "No description available"}...`}
                 </p>
                 <button
                   onClick={() => setShowFullDescription(!showFullDescription)}
@@ -637,10 +668,10 @@ const ListingPage = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-inter font-semibold text-gray-800">
-                          {property.agentname || property.agentName}
+                          {property.agentname || property.agentName || "Agent Name"}
                         </h3>
                         <p className="text-sm text-gray-500 font-inter">
-                          {property.designation}
+                          {property.designation || "Designation"}
                         </p>
                       </div>
                       {(property.agentimage || property.agentImage) ? (
@@ -659,7 +690,7 @@ const ListingPage = () => {
                     </div>
                     <div className="flex gap-2 mt-4 border-b pb-4">
                       <a
-                        href={`https://wa.me/${property.whatsaapno || property.whatsappNo}`}
+                        href={`https://wa.me/${property.whatsaapno || property.whatsappNo || "+971501234567"}`}
                         className="text-[#00603A] font-inter flex items-center space-x-1"
                       >
                         <FaWhatsapp />
@@ -667,7 +698,7 @@ const ListingPage = () => {
                       </a>
                       <span className="text-[#f5f5f5]">|</span>
                       <a
-                        href={`tel:${property.callno || property.callNo}`}
+                        href={`tel:${property.callno || property.callNo || "+971501234567"}`}
                         className="text-[#00603A] font-inter flex items-center space-x-1"
                       >
                         <FaPhoneAlt />

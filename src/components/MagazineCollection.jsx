@@ -2,13 +2,17 @@ import { BsArrowRight } from "react-icons/bs";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import mockupimg from "../assests/Mockup.png";
-import arrowimg from "../assests/Golf Community.jpg"; // Ensure you have a proper arrow image for navigation
+import newImage from "../assests/about.jpeg"; // Fallback image from Magazine component
+
 const MagazineCollection = () => {
   const [magazineImage, setMagazineImage] = useState("");
   const [heading, setHeading] = useState("");
   const [subheading, setSubheading] = useState("");
   const [reviews, setReviews] = useState([]);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [magazineDetails, setMagazineDetails] = useState([]); // New state for magazine details
+  const [loadingDetails, setLoadingDetails] = useState(true); // Loading state for magazine details
+  const [errorDetails, setErrorDetails] = useState(""); // Error state for magazine details
 
   const BASE_URL =
     process.env.NODE_ENV === "production"
@@ -59,8 +63,27 @@ const MagazineCollection = () => {
       }
     };
 
+    // Fetch magazine details
+    const fetchMagazineDetails = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/magazineDetails`);
+        console.log("Magazine Details API Response:", response.data);
+        const sanitizedMagazines = response.data.map((article) => ({
+          ...article,
+          category: article.category || "lifestyle", // Default category
+        }));
+        setMagazineDetails(sanitizedMagazines);
+        setLoadingDetails(false);
+      } catch (error) {
+        console.error("Error fetching magazine details:", error);
+        setErrorDetails("Failed to load magazine details.");
+        setLoadingDetails(false);
+      }
+    };
+
     fetchMagazineData();
     fetchReviews();
+    fetchMagazineDetails();
   }, []);
 
   // Handle review navigation
@@ -76,22 +99,27 @@ const MagazineCollection = () => {
     );
   };
 
+  // Handle card click (navigate to blog page)
+  const handleCardClick = (id) => {
+    window.location.href = `/blogpage/${id}`; // Simple navigation
+  };
+
   return (
     <>
-      <div className=" bg-white py-8 px-4  md:px-8 lg:px-16  ">
+      <div className="bg-white py-8 px-4 md:px-8 lg:px-16">
         <div className="text-start">
           <h2 className="text-lg md:text-3xl text-center md:text-left font-playfair text-[#00603A] mt-8 mb-16">
             The Magazine Collection
           </h2>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-0 p-0 ">
+        <div className="mt-8 grid grid-cols-1 gap-0 p-0">
           <div className="relative w-full h-[70vh]">
             <img
               src={magazineImage}
               alt="Magazine"
               className="w-full h-full object-cover"
-              onError={(e) => (e.target.src = "/default-image.jpg")} // Fallback image
+              onError={(e) => (e.target.src = "/default-image.jpg")}
             />
             <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/60 to-transparent p-4 md:p-12 text-white flex flex-col">
               <h3 className="text-xl md:text-3xl font-playfair">{heading}</h3>
@@ -101,7 +129,7 @@ const MagazineCollection = () => {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row items-center justify-between space-x-0 mt-4  md:space-x-6   space-y-12   md:space-y-0">
+          <div className="flex flex-col md:flex-row items-center justify-between space-x-0 mt-4 md:space-x-6 space-y-12 md:space-y-0">
             <p className="text-gray-600 font-inter text-center md:text-left max-w-2xl">
               Explore expert articles, market insights, and lifestyle features
               that showcase the latest in luxury properties and valuable assets.
@@ -114,10 +142,60 @@ const MagazineCollection = () => {
               Read journals
             </button>
           </div>
+
+          {/* Magazine Cards Section */}
+          <div className="mt-12">
+            <h3 className="text-2xl font-playfair text-[#00603A] mb-8 text-center md:text-left">
+              Featured Articles
+            </h3>
+            {loadingDetails ? (
+              <p className="text-gray-500 text-center">Loading articles...</p>
+            ) : errorDetails ? (
+              <p className="text-red-500 text-center">{errorDetails}</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {magazineDetails.slice(0, 4).map((article, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col cursor-pointer"
+                    onClick={() => handleCardClick(article._id)}
+                  >
+                    <img
+                      src={
+                        article.mainImage
+                          ? `${article.mainImage}`
+                          : article.image || newImage
+                      }
+                      alt={article.title}
+                      className="w-full h-40 object-cover"
+                      onError={(e) => (e.target.src = newImage)}
+                    />
+                    <div className="mt-4">
+                      <span className="text-sm text-gray-500 uppercase font-inter">
+                        {article.category || "Lifestyle"}
+                      </span>
+                      <h4 className="text-lg mt-2 font-playfair">
+                        {article.title}
+                      </h4>
+                      <p className="text-sm text-gray-500 mt-1 font-inter">
+                        {article.time
+                          ? new Date(article.time).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : article.date || "No date available"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="min-h-screen  px-4 py-12  mt-8   md:px-8 lg:px-8 border-t   border-[#00603A]">
+      <div className="min-h-screen px-4 py-12 mt-8 md:px-8 lg:px-8 border-t border-[#00603A]">
         <div className="p-6">
           <div className="text-center flex-1 p-4 md:p-6 flex flex-col justify-center items-center">
             <h2 className="text-xl md:text-3xl mb-8">
@@ -143,7 +221,7 @@ const MagazineCollection = () => {
                 LUXURY LIVING | EXPERT INTERVIEW <br /> TRAVEL TO LUXURY
               </p>
               <a href="/signupsection">
-                <button className="w-[300px] md:w-full  mt-6 p-2 text-base tracking-[0px] md:tracking-[2px] font-inter px-1 md:px-8 py-4 text-[#00603A] border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
+                <button className="w-[300px] md:w-full mt-6 p-2 text-base tracking-[0px] md:tracking-[2px] font-inter px-1 md:px-8 py-4 text-[#00603A] border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
                   SIGN UP FOR YOUR COPY
                 </button>
               </a>

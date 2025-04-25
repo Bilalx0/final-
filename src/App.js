@@ -34,65 +34,71 @@ import { MansionProvider } from "./context/MansionContext";
 import Admin from "./pages/Admin";
 import NewDevelopmentform from "./components/NewDevelopmentform";
 import LuxeCollectibles from "./pages/LuxeCollectibles";
+import { CollectiblesProvider } from "./context/CollectibleContext";
+
+
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
 
   return (
     <MansionProvider>
-      <Router>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/mansions" element={<Mansions />} />
-          <Route path="/penthouses" element={<Penthouses />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/contactus" element={<ContactUs />} />
-          <Route path="/privacypolicy" element={<PrivacyPolicy />} />
-          <Route path="/magazine" element={<Magazine />} />
-          <Route path="/blogpage/:id" element={<BlogPage />} />
-          <Route path="/mansion/:reference" element={<ListingPage />} />
-          <Route path="/signupsection" element={<SignupSection />} />
-          <Route path="/newdevelopment" element={<NewDevelopment />} />
-          <Route path="/collectivelisting" element={<CollectiveListing />} />
-          <Route path="/listedcollectibles" element={<LuxeCollectibles/>} />
+      <CollectiblesProvider>
+        <Router>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/mansions" element={<Mansions />} />
+            <Route path="/penthouses" element={<Penthouses />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/contactus" element={<ContactUs />} />
+            <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+            <Route path="/magazine" element={<Magazine />} />
+            <Route path="/blogpage/:id" element={<BlogPage />} />
+            <Route path="/mansion/:reference" element={<ListingPage />} />
+            <Route path="/signupsection" element={<SignupSection />} />
+            <Route path="/newdevelopment" element={<NewDevelopment />} />
+            <Route path="/collectivelisting" element={<CollectiveListing />} />
+            <Route path="/listedcollectibles" element={<LuxeCollectibles />} />
 
 
-          {/* Form Routes */}
-          <Route path="/create-post" element={<CreatePost />} />
-          <Route path="/magazineform" element={<MagazineForm />} />
-          <Route path="/magazineform/:id" element={<MagazineForm />} />
-          <Route path="/mansionform" element={<MansionForm />} />
-          <Route path="/mansionform/:id" element={<MansionForm />} />
-          <Route path="/penthouseform" element={<PenthouseForm />} />
-          <Route path="/collectiblesform" element={<CollectibleForm />} />
-          <Route path="/collectiblesform/:id" element={<CollectibleForm />} />
-          <Route path="/homeform" element={<HomePageForm />} />
-          <Route path="/new-developmentform" element={<NewDevelopmentForm />} />
-          <Route path="/mansionlist" element={<MansionList />} />
-          <Route path="/newdevelopmentform" element={<NewDevelopmentForm />} />
+            {/* Form Routes */}
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/magazineform" element={<MagazineForm />} />
+            <Route path="/magazineform/:id" element={<MagazineForm />} />
+            <Route path="/mansionform" element={<MansionForm />} />
+            <Route path="/mansionform/:id" element={<MansionForm />} />
+            <Route path="/penthouseform" element={<PenthouseForm />} />
+            <Route path="/collectiblesform" element={<CollectibleForm />} />
+            <Route path="/collectiblesform/:id" element={<CollectibleForm />} />
+            <Route path="/homeform" element={<HomePageForm />} />
+            <Route path="/new-developmentform" element={<NewDevelopmentForm />} />
+            <Route path="/mansionlist" element={<MansionList />} />
+            <Route path="/newdevelopmentform" element={<NewDevelopmentForm />} />
+            <Route path="/newdevelopmentform/:id" element={<NewDevelopmentForm />} />
 
-          {/* Authentication Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/admin" element={<Admin />} />
+            {/* Authentication Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/admin" element={<Admin />} />
 
-          {/* Protected Dashboard Route */}
-          <Route
-            path="/dashboard"
-            // element={<DashboardAdmin />}
+            {/* Protected Dashboard Route */}
+            <Route
+              path="/dashboard"
+              // element={<DashboardAdmin />}
 
-            element={isAuthenticated ? <DashboardAdmin /> : <Navigate to="/login" />}
-          />
-          <Route
-            path="/admin"
-            element={isAuthenticated ? <Admin /> : <Navigate to="/login" />}
-          />
+              element={isAuthenticated ? <DashboardAdmin /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/admin"
+              element={isAuthenticated ? <Admin /> : <Navigate to="/login" />}
+            />
 
-          {/* Catch-all Redirect */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </Router>
+            {/* Catch-all Redirect */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Router>
+      </CollectiblesProvider>
     </MansionProvider>
   );
 }

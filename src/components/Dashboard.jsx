@@ -24,6 +24,7 @@ const Dashboard = ({
   const [properties, setProperties] = useState([]); // For mansions, penthouses
   const [luxuryCollectibles, setLuxuryCollectibles] = useState([]); // For luxury collectibles
   const [magazineDetails, setMagazineDetails] = useState([]);
+  const [developments, setDevelopments] = useState([]); // For new developments
   const navigate = useNavigate();
 
   const BASE_URL =
@@ -67,6 +68,8 @@ const Dashboard = ({
         setLuxuryCollectibles(luxuryCollectibles.filter((item) => item.id !== id));
       } else if (["Mansion", "Penthouse"].includes(type)) {
         setProperties(properties.filter((item) => item.id !== id));
+      } else if (type === "Development") {
+        setDevelopments(developments.filter((item) => item._id !== id));
       }
     } catch (error) {
       console.error(`Error deleting ${type}:`, error);
@@ -85,16 +88,19 @@ const Dashboard = ({
     e.stopPropagation();
     if (type === "Magazine Article") {
       navigate(`/magazineform/${id}`);
-    } else if (type === "Luxury Collectible") {
-      navigate(`/collectiblesform/${id}`);
-    } else if (["Mansion", "Penthouse"].includes(type)) {
+    } else if (["Mansion", "Penthouse", "Luxury Collectible"].includes(type)) {
       navigate(`/mansionform/${id}`);
+    } else if (type === "Development") {
+      navigate(`/newdevelopmentform/${id}`); // Assuming a form route for developments
     }
   };
 
   // Handle add click
   const handleAddClick = (type) => {
     console.log(`Add new ${type}`);
+    if (type === "development") {
+      navigate("/developmentform"); // Navigate to development form
+    }
   };
 
   // Filtering logic for inquiries (leads)
@@ -160,6 +166,18 @@ const Dashboard = ({
     const matchesDate =
       !selectedDate ||
       new Date(magazine.time).toDateString() === selectedDate.toDateString();
+    return matchesSearch && matchesDate;
+  });
+
+  // Filtering logic for developments
+  const filteredDevelopments = developments.filter((development) => {
+    const matchesSearch =
+      development.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      development.link?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDate =
+      !selectedDate ||
+      new Date(development.createdAt).toDateString() ===
+        selectedDate.toDateString();
     return matchesSearch && matchesDate;
   });
 
@@ -254,15 +272,19 @@ const Dashboard = ({
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${BASE_URL}/api/luxury-collectibles`);
-        const transformedData = response.data.map((item) => ({
-          id: item._id,
-          reference: item.reference || "N/A",
-          title: item.title || "N/A",
-          category: item.category || "Unknown",
-          price: item.price || "N/A",
-          createdAt: item.createdAt || new Date().toISOString(),
-        }));
+        const response = await axios.get(`${BASE_URL}/api/properties`);
+        const data = response.data;
+
+        const transformedData = data
+          .filter((item) => item.propertytype === "Luxury Collectibles")
+          .map((item) => ({
+            id: item._id,
+            reference: item.reference || "N/A",
+            title: item.title || "N/A",
+            location: item.propertyaddress || "N/A",
+            price: item.price || "N/A",
+            createdAt: item.createdAt || new Date().toISOString(),
+          }));
         setLuxuryCollectibles(transformedData);
       } catch (error) {
         console.error("Error fetching luxury collectibles:", error);
@@ -304,6 +326,27 @@ const Dashboard = ({
 
     if (viewType === "magazine") {
       fetchMagazineDetails();
+    }
+  }, [viewType, BASE_URL]);
+
+  // Fetch developments for newdevelopments view
+  useEffect(() => {
+    const fetchDevelopments = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(`${BASE_URL}/api/developments`);
+        setDevelopments(response.data);
+      } catch (error) {
+        console.error("Error fetching developments:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (viewType === "newDevelopments") {
+      fetchDevelopments();
     }
   }, [viewType, BASE_URL]);
 
@@ -596,7 +639,7 @@ const Dashboard = ({
             </div>
           </div>
         ) : viewType === "mansions" ? (
-          // Mansions section
+          // Mansions section (unchanged)
           <div className="overflow-x-auto font-inter">
             <h1 className="text-2xl mb-4">Mansion Listings</h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-5 text-sm">
@@ -703,7 +746,7 @@ const Dashboard = ({
                                 handleDelete(
                                   property.id,
                                   "Mansion",
-                                  "/api/properties" // Fixed endpoint
+                                  "/api/properties"
                                 )
                               }
                             />
@@ -717,7 +760,7 @@ const Dashboard = ({
             </div>
           </div>
         ) : viewType === "penthouses" ? (
-          // Penthouses section
+          // Penthouses section (unchanged)
           <div className="overflow-x-auto font-inter">
             <h1 className="text-2xl mb-4">Penthouse Listings</h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-5 text-sm">
@@ -824,7 +867,7 @@ const Dashboard = ({
                                 handleDelete(
                                   property.id,
                                   "Penthouse",
-                                  "/api/properties" // Fixed endpoint
+                                  "/api/properties"
                                 )
                               }
                             />
@@ -838,9 +881,9 @@ const Dashboard = ({
             </div>
           </div>
         ) : viewType === "luxurycollectibles" ? (
-          // Luxury Collectibles section (unchanged)
+          // Luxury Collectibles section (updated endpoint in handleDelete)
           <div className="overflow-x-auto font-inter">
-            <h1 className="text-2xl mb-4">Luxury Collectibles</h1>
+            <h1 className="text-2xl mb-4">Luxury Collectibles Listings</h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-5 text-sm">
               <h1 className="flex flex-col text-base">
                 <span>
@@ -849,7 +892,7 @@ const Dashboard = ({
                 </span>
               </h1>
               <div className="flex items-center gap-2">
-                <Link to="/collectiblesform">
+                <Link to="/mansionform">
                   <button
                     className="bg-white text-[#00603A] px-3 py-[10px] hover:bg-gray-200"
                     onClick={() => handleAddClick("luxury collectible")}
@@ -872,7 +915,9 @@ const Dashboard = ({
             </div>
             <div className="overflow-x-auto font-inter">
               <div className="bg-[#00603A] text-white py-2 px-4 flex justify-between items-center">
-                <h2 className="text-base font-inter">Luxury Collectibles</h2>
+                <h2 className="text-base font-inter">
+                  Luxury Collectibles Listings
+                </h2>
                 <div className="flex gap-2">
                   <button className="bg-white text-[#00603A] px-3 py-1 hover:bg-gray-200">
                     Export
@@ -883,8 +928,8 @@ const Dashboard = ({
                 <thead>
                   <tr className="bg-[#BAD4CA]">
                     <th className="py-2 px-4 border">Ref no.</th>
-                    <th className="py-2 px-4 border">Name</th>
-                    <th className="py-2 px-4 border">Category</th>
+                    <th className="py-2 px-4 border">Title</th>
+                    <th className="py-2 px-4 border">Location</th>
                     <th className="py-2 px-4 border">Price</th>
                     <th className="py-2 px-4 border">
                       <label className="px-2">Created Time</label>
@@ -940,15 +985,11 @@ const Dashboard = ({
                         <td className="py-2 px-2 border">
                           {collectible.reference}
                         </td>
+                        <td className="py-2 px-2 border">{collectible.title}</td>
                         <td className="py-2 px-2 border">
-                          {collectible.title}
+                          {collectible.location}
                         </td>
-                        <td className="py-2 px-2 border">
-                          {collectible.category}
-                        </td>
-                        <td className="py-2 px-2 border">
-                          {collectible.price}
-                        </td>
+                        <td className="py-2 px-2 border">{collectible.price}</td>
                         <td className="py-2 px-2 border">
                           {formatDate(collectible.createdAt)}
                         </td>
@@ -970,7 +1011,7 @@ const Dashboard = ({
                                 handleDelete(
                                   collectible.id,
                                   "Luxury Collectible",
-                                  "/api/luxury-collectibles"
+                                  "/api/properties"
                                 )
                               }
                             />
@@ -984,7 +1025,7 @@ const Dashboard = ({
             </div>
           </div>
         ) : viewType === "magazine" ? (
-          // Magazine section
+          // Magazine section (unchanged)
           <div className="overflow-x-auto font-inter">
             <h1 className="text-2xl mb-4">Magazine Articles</h1>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-5 text-sm">
@@ -1118,6 +1159,161 @@ const Dashboard = ({
                                   magazine.id,
                                   "Magazine Article",
                                   "/api/magazineDetail"
+                                )
+                              }
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : viewType === "newDevelopments" ? (
+          // New Developments section
+          <div className="overflow-x-auto font-inter">
+            <h1 className="text-2xl mb-4">New Developments</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-5 text-sm">
+              <h1 className="flex flex-col text-base">
+                <span>
+                  Dashboard{" "}
+                  <span className="text-blue-600">/ New Developments </span>
+                </span>
+              </h1>
+              <div className="flex items-center gap-2">
+                <Link to="/newdevelopmentform">
+                  <button
+                    className="bg-white text-[#00603A] px-3 py-[10px] hover:bg-gray-200"
+                    onClick={() => handleAddClick("development")}
+                    title="Add New Development"
+                  >
+                    <FaPlus />
+                  </button>
+                </Link>
+                <input
+                  type="text"
+                  placeholder="Search by Title or Link"
+                  className="flex-1 px-4 py-2 text-gray-700 focus:outline-none border border-gray-300"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button className="bg-[#00603A] px-4 py-[10px] text-white hover:text-[#00603A] border border-[#00603A] hover:bg-transparent transition">
+                  <FaSearch />
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto font-inter">
+              <div className="bg-[#00603A] text-white py-2 px-4 flex justify-between items-center">
+                <h2 className="text-base font-inter">New Developments</h2>
+                <div className="flex gap-2">
+                  <button className="bg-white text-[#00603A] px-3 py-1 hover:bg-gray-200">
+                    Export
+                  </button>
+                </div>
+              </div>
+              <table className="min-w-full border font-inter text-sm">
+                <thead>
+                  <tr className="bg-[#BAD4CA]">
+                    <th className="py-2 px-4 border">S.NO</th>
+                    <th className="py-2 px-4 border">Title</th>
+                    <th className="py-2 px-4 border">Image</th>
+                    <th className="py-2 px-4 border">Link</th>
+                    <th className="py-2 px-4 border">
+                      <label className="px-2">Created Time</label>
+                      <DatePicker
+                        selected={selectedDate}
+                        onChange={(date) => setSelectedDate(date)}
+                        showTimeSelect
+                        dateFormat="Pp"
+                        customInput={
+                          <button className="border px-2 py-1 rounded bg-white shadow-sm cursor-pointer">
+                            {selectedDate
+                              ? formatDate(selectedDate)
+                              : "Select Time"}{" "}
+                            🔽
+                          </button>
+                        }
+                      />
+                    </th>
+                    <th className="py-2 px-4 border">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="py-2 px-2 border text-center">
+                        Loading...
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="py-2 px-2 border text-center text-red-600"
+                      >
+                        Error: {error}
+                      </td>
+                    </tr>
+                  ) : filteredDevelopments.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="py-2 px-2 border text-center">
+                        No developments available
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDevelopments.map((development, index) => (
+                      <tr
+                        key={development._id}
+                        className={`hover:bg-gray-100 ${
+                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                        }`}
+                        onClick={() => handleRowClick(development)}
+                      >
+                        <td className="py-2 px-2 border">{index + 1}</td>
+                        <td className="py-2 px-2 border">
+                          {development.title}
+                        </td>
+                        <td className="py-2 px-2 border">
+                          {development.image ? (
+                            <img
+                              src={development.image}
+                              alt={development.title}
+                              className="h-16 w-16 object-cover"
+                            />
+                          ) : (
+                            "N/A"
+                          )}
+                        </td>
+                        <td className="py-2 px-2 border">
+                          <a
+                            href={development.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            {development.link}
+                          </a>
+                        </td>
+                        <td className="py-2 px-2 border">
+                          {formatDate(development.createdAt)}
+                        </td>
+                        <td className="py-2 px-2 border">
+                          <div className="flex gap-2 justify-center">
+                            <FaEdit
+                              className="text-green-600 cursor-pointer"
+                              onClick={(e) =>
+                                handleEditClick(e, development._id, "Development")
+                              }
+                            />
+                            <FaTrash
+                              className="text-red-600 cursor-pointer"
+                              onClick={() =>
+                                handleDelete(
+                                  development._id,
+                                  "Development",
+                                  "/api/developments"
                                 )
                               }
                             />

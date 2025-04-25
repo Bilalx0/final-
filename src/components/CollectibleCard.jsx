@@ -1,3 +1,4 @@
+// components/CollectibleCard.js
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter, FaWhatsapp } from "react-icons/fa";
@@ -5,19 +6,10 @@ import { X } from "lucide-react";
 import sharelogo from "../assests/Share Icon_1.svg";
 import sharelogoHover from "../assests/Share Icon White.svg";
 
-const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
+const CollectibleCard = ({ collectible, onShare, searchQuery }) => {
   const FALLBACK_IMAGE = "/images/fallback.jpg";
   const [isShareHovered, setIsShareHovered] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
-
-  // Use property if available, otherwise fall back to mansion
-  const data = property || mansion;
-
-  // Guard clause: return null if no data is provided
-  if (!data) {
-    console.error('MansionCard received neither property nor mansion:', { property, mansion });
-    return null;
-  }
 
   const handleShareClick = () => {
     setShareModalOpen(true);
@@ -26,16 +18,12 @@ const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
 
   const getShareUrl = () => {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/property/${data.reference || "unknown"}`;
+    return `${baseUrl}/collectible/${collectible.reference}`;
   };
 
   const encodeShareText = () => {
-    const baseText = `Check out this property: ${data.title || "N/A"} - AED ${data.price || "N/A"} in ${data.community || "N/A"}, ${data.country || "N/A"}`;
-    if (data.propertytype === "Luxury Collectibles") {
-      return encodeURIComponent(baseText);
-    }
     return encodeURIComponent(
-      `${baseText} | ${data.bedrooms || 0} Beds | ${data.bathrooms || 0} Baths | ${data.size || 0} sqft`
+      `Check out this collectible: ${collectible.title} - AED ${collectible.price || "N/A"}`
     );
   };
 
@@ -68,41 +56,20 @@ const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
   const highlightText = (text, query) => {
     if (!query || !text) return text;
     const regex = new RegExp(`(${query})`, "gi");
-    return text.replace(regex, "<mark>$1</mark>");
+    return text.toString().replace(regex, "<mark>$1</mark>");
   };
 
-  const isLuxuryCollectible = data.propertytype === "Luxury Collectibles";
-
-  // Determine the location text to display
-  let locationText = "";
-  if (isLuxuryCollectible) {
-    // For Luxury Collectibles, only show community and country
-    const community = data.community || data.location || "N/A";
-    const country = data.country || "N/A";
-    locationText = community !== "N/A" || country !== "N/A" ? `${community}, ${country}` : "Location unavailable";
-  } else {
-    // For other property types, include subcommunity
-    locationText = `${data.community || "N/A"}, ${data.subcommunity || "N/A"}, ${data.country || "N/A"}`;
-  }
-
-  // If location is unavailable for Luxury Collectibles, fall back to category or description
-  const fallbackText = isLuxuryCollectible && locationText === "Location unavailable"
-    ? data.category || data.description || "Luxury Item"
-    : null;
-
   return (
-    <div className="bg-white overflow-hidden relative w-80 min-h-[400px]">
+    <div className="bg-white overflow-hidden relative w-80 min-h-[400px] shadow-md hover:shadow-lg transition-shadow duration-300">
       <div className="relative">
         <img
-          src={data.images?.[0] || data.image || FALLBACK_IMAGE}
-          alt={data.title || "Property"}
+          src={collectible.images?.[0]}
+          alt={collectible.title || "Collectible"}
           className="w-full h-48 object-cover"
+          onError={(e) => {
+            e.target.src = FALLBACK_IMAGE;
+          }}
         />
-        {data.tag === "Featured" && (
-          <span className="absolute top-2 left-2 bg-yellow-500 text-white px-2 py-1 text-xs uppercase font-bold rounded">
-            {data.tag}
-          </span>
-        )}
         <button
           onClick={handleShareClick}
           onMouseEnter={() => setIsShareHovered(true)}
@@ -121,39 +88,31 @@ const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
           <p
             className="text-lg font-bold text-gray-800"
             dangerouslySetInnerHTML={{
-              __html: highlightText(`AED ${data.price || "N/A"}`, searchQuery),
+              __html: highlightText(`AED ${collectible.price || "N/A"}`, searchQuery),
             }}
           />
           <p
             className="text-sm text-gray-600 mt-1"
             dangerouslySetInnerHTML={{
-              __html: highlightText(data.propertytype || "N/A", searchQuery),
+              __html: highlightText(collectible.category || "N/A", searchQuery),
             }}
           />
-          {!isLuxuryCollectible && (
-            <p
-              className="text-sm text-gray-600 mt-1"
-              dangerouslySetInnerHTML={{
-                __html: highlightText(
-                  `${data.bedrooms || 0} Beds | ${data.bathrooms || 0} Baths | ${data.size || 0} sqft`,
-                  searchQuery
-                ),
-              }}
-            />
-          )}
           <p
-            className="text-sm text-gray-600 mt-1 line-clamp-1"
+            className="text-sm text-gray-600 mt-1"
             dangerouslySetInnerHTML={{
-              __html: highlightText(
-                fallbackText || locationText,
-                searchQuery
-              ),
+              __html: highlightText(collectible.title, searchQuery),
+            }}
+          />
+          <p
+            className="text-sm text-gray-600 mt-1 line-clamp-2"
+            dangerouslySetInnerHTML={{
+              __html: highlightText(collectible.description, searchQuery),
             }}
           />
         </div>
         <div className="mt-2">
           <Link
-            to={`/mansion/${data.reference || "unknown"}`}
+            to={`/collectible/${collectible.reference}`}
             className="inline-block text-blue-500 hover:underline text-sm font-medium"
           >
             View Details
@@ -172,14 +131,14 @@ const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
               </button>
               <div className="relative w-full h-64">
                 <img
-                  src={data.images?.[0] || data.image || FALLBACK_IMAGE}
-                  alt={data.title || "Property"}
+                  src={collectible.images?.[0] || FALLBACK_IMAGE}
+                  alt={collectible.title}
                   className="w-full h-full object-cover mt-8"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/55 to-transparent"></div>
                 <div className="absolute top-4 left-4 text-white">
                   <h2 className="text-2xl text-left font-playfair">
-                    {data.title || "N/A"}
+                    {collectible.title}
                   </h2>
                 </div>
               </div>
@@ -187,7 +146,7 @@ const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
             <div className="p-5 text-left">
               <h3 className="text-lg font-semibold">Share</h3>
               <p className="text-gray-600 mt-2">
-                {data.subtitle || `Check out this amazing ${data.propertytype?.toLowerCase() || "property"}!`}
+                {collectible.subTitle || "Check out this amazing collectible!"}
               </p>
               <div className="flex justify-left space-x-4 mt-4">
                 <button
@@ -235,4 +194,4 @@ const MansionCard = ({ property, mansion, onShare, searchQuery }) => {
   );
 };
 
-export default MansionCard;
+export default CollectibleCard;

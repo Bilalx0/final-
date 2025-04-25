@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import imageCompression from "browser-image-compression";
 
 const MansionForm = () => {
-  const { id } = useParams(); // Get ID from URL for editing
+  const { id } = useParams();
   const navigate = useNavigate();
   const [mansionData, setMansionData] = useState({
     reference: "",
@@ -33,10 +34,11 @@ const MansionForm = () => {
     phone: "",
     whatsaapno: "",
     callno: "",
+    category: "", // Added for Luxury Collectibles
   });
 
-  const [images, setImages] = useState([]); // New images to upload
-  const [existingImages, setExistingImages] = useState([]); // Existing image URLs from backend
+  const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [agentimage, setAgentImage] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -47,20 +49,38 @@ const MansionForm = () => {
       ? "https://backend-5kh4.onrender.com"
       : "http://localhost:5001";
 
-  // Fetch existing data for editing
+  const compressionOptions = {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+  };
+
   useEffect(() => {
     if (id) {
       const fetchProperty = async () => {
         try {
           const response = await axios.get(`${BASE_URL}/api/propertyDetail/${id}`);
           const data = response.data;
-          // Populate mansion data
-          setMansionData({
+          // Normalize data for Luxury Collectibles
+          const normalizedData = {
             ...data,
-            amenities: Array.isArray(data.amenities) ? data.amenities.join(", ") : data.amenities || "",
-          });
-          // Populate existing images (assuming backend returns an array of image URLs)
-          setExistingImages(data.images || []); // Adjust based on your backend response structure
+            size: data.propertytype === "Luxury Collectibles" ? "" : data.size || "",
+            bedrooms: data.propertytype === "Luxury Collectibles" ? "" : data.bedrooms || "",
+            bathrooms: data.propertytype === "Luxury Collectibles" ? "" : data.bathrooms || "",
+            furnishingtype: data.propertytype === "Luxury Collectibles" ? "" : data.furnishingtype || "",
+            builtuparea: data.propertytype === "Luxury Collectibles" ? "" : data.builtuparea || "",
+            projectstatus: data.propertytype === "Luxury Collectibles" ? "" : data.projectstatus || "",
+            community: data.propertytype === "Luxury Collectibles" ? "" : data.community || "",
+            subcommunity: data.propertytype === "Luxury Collectibles" ? "" : data.subcommunity || "",
+            country: data.propertytype === "Luxury Collectibles" ? "" : data.country || "",
+            propertyaddress: data.propertytype === "Luxury Collectibles" ? "" : data.propertyaddress || "",
+            unitno: data.propertytype === "Luxury Collectibles" ? "" : data.unitno || "",
+            tag: data.propertytype === "Luxury Collectibles" ? "" : data.tag || "",
+            status: data.propertytype === "Luxury Collectibles" ? "" : data.status || "",
+            amenities: data.propertytype === "Luxury Collectibles" ? "" : (Array.isArray(data.amenities) ? data.amenities.join(", ") : data.amenities || ""),
+          };
+          setMansionData(normalizedData);
+          setExistingImages(data.images || []);
         } catch (error) {
           console.error("Error fetching property:", error);
           setSubmitError("Failed to load property data.");
@@ -78,16 +98,33 @@ const MansionForm = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files); // Convert FileList to array
-    setImages(files); // Store new images
+  const compressImage = async (file) => {
+    try {
+      const compressedFile = await imageCompression(file, compressionOptions);
+      return new File([compressedFile], file.name, { type: file.type });
+    } catch (error) {
+      console.error("Image compression error:", error);
+      setSubmitError("Failed to compress image: " + file.name);
+      return file;
+    }
   };
 
-  const handleAgentImageChange = (e) => {
-    setAgentImage(e.target.files[0]);
+  const handleImageChange = async (e) => {
+    const files = Array.from(e.target.files);
+    const compressedFiles = await Promise.all(
+      files.map(async (file) => await compressImage(file))
+    );
+    setImages(compressedFiles);
   };
 
-  // Remove an existing image
+  const handleAgentImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const compressedFile = await compressImage(file);
+      setAgentImage(compressedFile);
+    }
+  };
+
   const handleRemoveExistingImage = (index) => {
     setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
@@ -100,41 +137,86 @@ const MansionForm = () => {
 
     try {
       const formData = new FormData();
-      // Append all mansion data fields
-      Object.keys(mansionData).forEach((key) => {
-        const value = mansionData[key] !== null && mansionData[key] !== undefined
-          ? mansionData[key].toString()
+      const isLuxuryCollectibles = mansionData.propertytype === "Luxury Collectibles";
+
+      // Define fields to include based on property type
+      const fieldsToInclude = isLuxuryCollectibles
+        ? [
+            "reference",
+            "propertytype",
+            "price",
+            "title",
+            "subtitle",
+            "description",
+            "video",
+            "agentname",
+            "designation",
+            "email",
+            "phone",
+            "whatsaapno",
+            "callno",
+            "category",
+          ]
+        : Object.keys(mansionData);
+
+      // Prepare the data to send by setting irrelevant fields to null for Luxury Collectibles
+      const normalizedData = { ...mansionData };
+      if (isLuxuryCollectibles) {
+        const irrelevantFields = [
+          "size",
+          "bedrooms",
+          "bathrooms",
+          "furnishingtype",
+          "builtuparea",
+          "projectstatus",
+          "community",
+          "subcommunity",
+          "country",
+          "propertyaddress",
+          "unitno",
+          "tag",
+          "status",
+          "amenities",
+        ];
+        irrelevantFields.forEach((field) => {
+          normalizedData[field] = null; // Set to null instead of empty string
+        });
+      }
+
+      // Append only the relevant fields to FormData
+      fieldsToInclude.forEach((key) => {
+        const value = normalizedData[key] !== null && normalizedData[key] !== undefined
+          ? normalizedData[key].toString()
           : "";
         formData.append(key, value);
       });
 
-      // Append new images
+      // Append compressed images
       images.forEach((image) => {
         formData.append("images", image);
       });
 
-      // Append existing image URLs to inform backend which images to keep
+      // Append existing image URLs
       if (existingImages.length > 0) {
         formData.append("existingImages", JSON.stringify(existingImages));
       }
 
-      // Append agent image if it exists
+      // Append compressed agent image
       if (agentimage) {
         formData.append("agentimage", agentimage);
       }
 
-      // Debug: Log form data entries
-      console.log("Sending form data:", Object.fromEntries(formData));
+      // Log FormData for debugging
+      const formDataEntries = Object.fromEntries(formData);
+      console.log("Sending form data:", formDataEntries);
 
       let response;
       if (id) {
-        // Update existing property
         response = await axios.put(`${BASE_URL}/api/propertyDetail/${id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           timeout: 30000,
         });
       } else {
-        // Create new property
         response = await axios.post(`${BASE_URL}/api/propertyDetail`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -143,7 +225,6 @@ const MansionForm = () => {
       console.log("Submission successful:", response.data);
       setSubmitSuccess(true);
 
-      // Reset form for create, or navigate back for update
       if (!id) {
         setMansionData({
           reference: "",
@@ -173,6 +254,7 @@ const MansionForm = () => {
           phone: "",
           whatsaapno: "",
           callno: "",
+          category: "",
         });
         setImages([]);
         setExistingImages([]);
@@ -195,10 +277,12 @@ const MansionForm = () => {
     }
   };
 
+  const isLuxuryCollectibles = mansionData.propertytype === "Luxury Collectibles";
+
   return (
     <div className="w-full mx-auto p-4 md:p-20 mb-8 font-inter">
       <form onSubmit={handleSubmit}>
-        <div className="bg-white shadow-md p-6 mb-6 -lg">
+        <div className="bg-white shadow-md p-6 mb-6 rounded-lg">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
             {id ? "Edit Property" : "Add New Property"}
           </h2>
@@ -230,124 +314,141 @@ const MansionForm = () => {
                 <option value="Luxury Collectibles">Luxury Collectibles</option>
               </select>
             </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Size (SQFT)*</label>
-              <input
-                type="number"
-                name="size"
-                placeholder="Add Size"
-                value={mansionData.size}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-                min="1"
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Bedrooms*</label>
-              <input
-                type="number"
-                name="bedrooms"
-                placeholder="Add Bedrooms"
-                value={mansionData.bedrooms}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-                min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Bathrooms*</label>
-              <input
-                type="number"
-                name="bathrooms"
-                placeholder="Add Bathrooms"
-                value={mansionData.bathrooms}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-                min="0"
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Furnishing Type</label>
-              <select
-                name="furnishingtype"
-                value={mansionData.furnishingtype}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-              >
-                <option value="">Select Furnishing Type</option>
-                <option value="Furnished">Furnished</option>
-                <option value="Unfurnished">Unfurnished</option>
-                <option value="Semi-Furnished">Semi-Furnished</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Built-up Area (SQFT)</label>
-              <input
-                type="number"
-                name="builtuparea"
-                placeholder="Add Built-up Area"
-                value={mansionData.builtuparea}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                min="1"
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Project Status</label>
-              <select
-                name="projectstatus"
-                value={mansionData.projectstatus}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-              >
-                <option value="">Select Project Status</option>
-                <option value="Ready">Ready</option>
-                <option value="Under Construction">Under Construction</option>
-                <option value="Off Plan">Off Plan</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Community*</label>
-              <input
-                type="text"
-                name="community"
-                placeholder="Add Community"
-                value={mansionData.community}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Sub Community</label>
-              <input
-                type="text"
-                name="subcommunity"
-                placeholder="Add Sub community"
-                value={mansionData.subcommunity}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Country*</label>
-              <input
-                type="text"
-                name="country"
-                placeholder="Add Country"
-                value={mansionData.country}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-              />
-            </div>
+            {isLuxuryCollectibles && (
+              <div className="form-group">
+                <label className="block text-gray-700 mb-2">Category</label>
+                <input
+                  type="text"
+                  name="category"
+                  placeholder="Add Category (e.g., Art, Jewelry)"
+                  value={mansionData.category}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                />
+              </div>
+            )}
+            {!isLuxuryCollectibles && (
+              <>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Size (SQFT)*</label>
+                  <input
+                    type="number"
+                    name="size"
+                    placeholder="Add Size"
+                    value={mansionData.size}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                    required
+                    min="1"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Bedrooms*</label>
+                  <input
+                    type="number"
+                    name="bedrooms"
+                    placeholder="Add Bedrooms"
+                    value={mansionData.bedrooms}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                    required
+                    min="0"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Bathrooms*</label>
+                  <input
+                    type="number"
+                    name="bathrooms"
+                    placeholder="Add Bathrooms"
+                    value={mansionData.bathrooms}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                    required
+                    min="0"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Furnishing Type</label>
+                  <select
+                    name="furnishingtype"
+                    value={mansionData.furnishingtype}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                  >
+                    <option value="">Select Furnishing Type</option>
+                    <option value="Furnished">Furnished</option>
+                    <option value="Unfurnished">Unfurnished</option>
+                    <option value="Semi-Furnished">Semi-Furnished</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Built-up Area (SQFT)</label>
+                  <input
+                    type="number"
+                    name="builtuparea"
+                    placeholder="Add Built-up Area"
+                    value={mansionData.builtuparea}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                    min="1"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Project Status</label>
+                  <select
+                    name="projectstatus"
+                    value={mansionData.projectstatus}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                  >
+                    <option value="">Select Project Status</option>
+                    <option value="Ready">Ready</option>
+                    <option value="Under Construction">Under Construction</option>
+                    <option value="Off Plan">Off Plan</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Community*</label>
+                  <input
+                    type="text"
+                    name="community"
+                    placeholder="Add Community"
+                    value={mansionData.community}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Sub Community</label>
+                  <input
+                    type="text"
+                    name="subcommunity"
+                    placeholder="Add Sub community"
+                    value={mansionData.subcommunity}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="block text-gray-700 mb-2">Country*</label>
+                  <input
+                    type="text"
+                    name="country"
+                    placeholder="Add Country"
+                    value={mansionData.country}
+                    onChange={handleChange}
+                    className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                    required
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="bg-white shadow-md p-6 mb-6 -lg">
+        <div className="bg-white shadow-md p-6 mb-6 rounded-lg">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Pricing & Description</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="form-group">
@@ -398,27 +499,28 @@ const MansionForm = () => {
                 required
               ></textarea>
             </div>
-            <div className="form-group md:col-span-2">
-              <label className="block text-gray-700 mb-2">Amenities*</label>
-              <textarea
-                rows="4"
-                name="amenities"
-                placeholder="List amenities separated by commas"
-                value={mansionData.amenities}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-              ></textarea>
-            </div>
+            {!isLuxuryCollectibles && (
+              <div className="form-group md:col-span-2">
+                <label className="block text-gray-700 mb-2">Amenities*</label>
+                <textarea
+                  rows="4"
+                  name="amenities"
+                  placeholder="List amenities separated by commas"
+                  value={mansionData.amenities}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                  required
+                ></textarea>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="bg-white shadow-md p-6 mb-6 -lg">
+        <div className="bg-white shadow-md p-6 mb-6 rounded-lg">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Media</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="form-group">
               <label className="block text-gray-700 mb-2">Property Images{!id && "*"}</label>
-              {/* Display existing images */}
               {existingImages.length > 0 && (
                 <div className="mb-4">
                   <p className="text-sm text-gray-600">Existing Images:</p>
@@ -426,7 +528,7 @@ const MansionForm = () => {
                     {existingImages.map((imageUrl, index) => (
                       <div key={index} className="relative">
                         <img
-                          src={imageUrl} // Adjust URL based on your backend
+                          src={imageUrl}
                           alt={`Property ${index}`}
                           className="w-full h-24 object-cover rounded"
                         />
@@ -442,7 +544,6 @@ const MansionForm = () => {
                   </div>
                 </div>
               )}
-              {/* Input for new images */}
               <input
                 type="file"
                 name="images"
@@ -450,11 +551,11 @@ const MansionForm = () => {
                 multiple
                 onChange={handleImageChange}
                 className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required={!id && existingImages.length === 0} // Required only for new properties if no existing images
+                required={!id && existingImages.length === 0}
               />
               {images.length > 0 && (
                 <div className="mt-2 text-sm text-gray-600">
-                  <p>Selected new images:</p>
+                  <p>Selected new images (compressed):</p>
                   <ul className="list-disc pl-5">
                     {images.map((image, index) => (
                       <li key={index}>{image.name}</li>
@@ -477,67 +578,69 @@ const MansionForm = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow-md p-6 mb-6 -lg">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Location & Status</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Property Address*</label>
-              <input
-                type="text"
-                name="propertyaddress"
-                placeholder="Add Property Address"
-                value={mansionData.propertyaddress}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Unit No</label>
-              <input
-                type="text"
-                name="unitno"
-                placeholder="Add Unit no"
-                value={mansionData.unitno}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-              />
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Tag</label>
-              <select
-                name="tag"
-                value={mansionData.tag}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-              >
-                <option value="">Select Tag</option>
-                <option value="Featured">Featured</option>
-                <option value="Popular">Popular</option>
-                <option value="New">New</option>
-                <option value="Hot Deal">Hot Deal</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="block text-gray-700 mb-2">Status*</label>
-              <select
-                name="status"
-                value={mansionData.status}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
-                required
-              >
-                <option value="">Select Status</option>
-                <option value="For Sale">For Sale</option>
-                <option value="For Rent">For Rent</option>
-                <option value="Sold">Sold</option>
-                <option value="Rented">Rented</option>
-              </select>
+        {!isLuxuryCollectibles && (
+          <div className="bg-white shadow-md p-6 mb-6 rounded-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Location & Status</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="form-group">
+                <label className="block text-gray-700 mb-2">Property Address*</label>
+                <input
+                  type="text"
+                  name="propertyaddress"
+                  placeholder="Add Property Address"
+                  value={mansionData.propertyaddress}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="block text-gray-700 mb-2">Unit No</label>
+                <input
+                  type="text"
+                  name="unitno"
+                  placeholder="Add Unit no"
+                  value={mansionData.unitno}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                />
+              </div>
+              <div className="form-group">
+                <label className="block text-gray-700 mb-2">Tag</label>
+                <select
+                  name="tag"
+                  value={mansionData.tag}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                >
+                  <option value="">Select Tag</option>
+                  <option value="Featured">Featured</option>
+                  <option value="Popular">Popular</option>
+                  <option value="New">New</option>
+                  <option value="Hot Deal">Hot Deal</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="block text-gray-700 mb-2">Status*</label>
+                <select
+                  name="status"
+                  value={mansionData.status}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
+                  required
+                >
+                  <option value="">Select Status</option>
+                  <option value="For Sale">For Sale</option>
+                  <option value="For Rent">For Rent</option>
+                  <option value="Sold">Sold</option>
+                  <option value="Rented">Rented</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        <div className="bg-white shadow-md p-6 mb-6 -lg">
+        <div className="bg-white shadow-md p-6 mb-6 rounded-lg">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Agent Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="form-group">

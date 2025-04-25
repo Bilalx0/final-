@@ -3,7 +3,7 @@ import { FaSearch } from "react-icons/fa";
 import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import Footer from "../components/Footer";
 import { Menu, X } from "lucide-react";
-import LuxuaryCollectibleList from '../components/LuxuaryCollectibleList'
+import LuxuryCollectibleList from "../components/LuxuaryCollectibleList";
 import { useMansions } from "../context/MansionContext";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -13,29 +13,25 @@ const LuxeCollectibles = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [filters, setFilters] = useState({
-    bedrooms: "",
+    category: "",
     minPrice: "",
     maxPrice: "",
-    minSize: "",
-    maxSize: "",
     sortBy: "newest",
   });
-  const { mansions } = useMansions();
 
-  const sizeRef = useRef(null);
-  const bedroomsRef = useRef(null);
+  const { mansions, loading, error } = useMansions();
+
   const priceRef = useRef(null);
+  const categoryRef = useRef(null);
   const moreRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        sizeRef.current &&
-        !sizeRef.current.contains(event.target) &&
-        bedroomsRef.current &&
-        !bedroomsRef.current.contains(event.target) &&
         priceRef.current &&
         !priceRef.current.contains(event.target) &&
+        categoryRef.current &&
+        !categoryRef.current.contains(event.target) &&
         moreRef.current &&
         !moreRef.current.contains(event.target)
       ) {
@@ -59,18 +55,17 @@ const LuxeCollectibles = () => {
     if (searchTerms.length > 0) {
       const matchesSearch = searchTerms.some((term) =>
         [
-          mansion.country,
-          mansion.area,
-          mansion.district,
-          mansion.city,
+          mansion.title,
           mansion.community,
-          mansion.subcommunity,
+          mansion.country,
+          mansion.description,
+          mansion.subtitle,
         ].some((field) => field && field.toLowerCase().includes(term))
       );
       if (!matchesSearch) return false;
     }
 
-    if (filters.bedrooms && mansion.bedrooms < parseInt(filters.bedrooms)) {
+    if (filters.category && mansion.category !== filters.category) {
       return false;
     }
 
@@ -78,13 +73,6 @@ const LuxeCollectibles = () => {
       return false;
     }
     if (filters.maxPrice && mansion.price > parseInt(filters.maxPrice)) {
-      return false;
-    }
-
-    if (filters.minSize && mansion.size < parseInt(filters.minSize)) {
-      return false;
-    }
-    if (filters.maxSize && mansion.size > parseInt(filters.maxSize)) {
       return false;
     }
 
@@ -97,13 +85,9 @@ const LuxeCollectibles = () => {
         return a.price - b.price;
       case "price_high":
         return b.price - a.price;
-      case "size_low":
-        return a.size - b.size;
-      case "size_high":
-        return b.size - a.size;
       case "newest":
       default:
-        return a.reference < b.reference ? 1 : -1;
+        return new Date(b.createdAt) - new Date(a.createdAt);
     }
   });
 
@@ -121,11 +105,9 @@ const LuxeCollectibles = () => {
 
   const resetFilters = () => {
     setFilters({
-      bedrooms: "",
+      category: "",
       minPrice: "",
       maxPrice: "",
-      minSize: "",
-      maxSize: "",
       sortBy: "newest",
     });
     setActiveDropdown(null);
@@ -134,6 +116,11 @@ const LuxeCollectibles = () => {
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
+
+  const categories = [...new Set(mansions.map((item) => item.category))].filter(Boolean);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">Error: {error.message}</div>;
 
   return (
     <>
@@ -144,7 +131,7 @@ const LuxeCollectibles = () => {
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
-                placeholder="Country, Area, District..."
+                placeholder="Search by title, community, country..."
                 className="w-full px-4 py-2 text-[#000000] text-sm bg-[#f5f5f5] focus:outline-none"
                 value={searchQuery}
                 onChange={handleSearchChange}
@@ -235,42 +222,37 @@ const LuxeCollectibles = () => {
           Discover a curated selection of exceptional luxury collectibles from around the
           globe at The Mansion Market. Each listing is handpicked to meet your
           ultra-luxury requirements, offering unparalleled elegance, opulence,
-          and breathtaking views.
+          and craftsmanship.
         </p>
 
         <div className="flex flex-wrap pt-6 gap-4 items-center w-full justify-between">
           <div className="flex gap-4">
-            <div className="relative" ref={sizeRef}>
+            <div className="relative" ref={categoryRef}>
               <button
-                onClick={() => toggleDropdown("size")}
+                onClick={() => toggleDropdown("category")}
                 className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
-                Size
+                Category
               </button>
-              {activeDropdown === "size" && (
+              {activeDropdown === "category" && (
                 <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A] shadow-lg p-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600">
-                      Size Range (sq.ft)
+                      Category
                     </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        name="minSize"
-                        placeholder="Min"
-                        value={filters.minSize}
-                        onChange={handleFilterChange}
-                        className="border border-gray-300 px-3 py-1 w-1/2 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
-                      />
-                      <input
-                        type="number"
-                        name="maxSize"
-                        placeholder="Max"
-                        value={filters.maxSize}
-                        onChange={handleFilterChange}
-                        className="border border-gray-300 px-3 py-1 w-1/2 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
-                      />
-                    </div>
+                    <select
+                      name="category"
+                      value={filters.category}
+                      onChange={handleFilterChange}
+                      className="border border-gray-300 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
@@ -281,52 +263,6 @@ const LuxeCollectibles = () => {
                       <button
                         onClick={() => setActiveDropdown(null)}
                         className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="relative" ref={bedroomsRef}>
-              <button
-                onClick={() => toggleDropdown("bedrooms")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
-              >
-                Bedrooms
-              </button>
-              {activeDropdown === "bedrooms" && (
-                <div className="absolute z-10 mt-2 w-48 bg-white border border-[#00603A] shadow-lg p-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-600">
-                      Bedrooms
-                    </label>
-                    <select
-                      name="bedrooms"
-                      value={filters.bedrooms}
-                      onChange={handleFilterChange}
-                      className="border border-gray-300 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
-                    >
-                      <option value="">Any</option>
-                      <option value="1">1+</option>
-                      <option value="2">2+</option>
-                      <option value="3">3+</option>
-                      <option value="4">4+</option>
-                      <option value="5">5+</option>
-                      <option value="6">6+</option>
-                    </select>
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
-                      >
-                        Reset
-                      </button>
-                      <button
-                        onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
                       >
                         Apply
                       </button>
@@ -370,13 +306,13 @@ const LuxeCollectibles = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
+                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
+                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
                       >
                         Apply
                       </button>
@@ -405,13 +341,13 @@ const LuxeCollectibles = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
+                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
+                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
                       >
                         Apply
                       </button>
@@ -431,14 +367,12 @@ const LuxeCollectibles = () => {
             <option value="newest">Sort by Featured</option>
             <option value="price_low">Price (Low to High)</option>
             <option value="price_high">Price (High to Low)</option>
-            <option value="size_low">Size (Small to Large)</option>
-            <option value="size_high">Size (Large to Small)</option>
           </select>
         </div>
         <p className="text-gray-600">
-          {sortedCollectibles.length} properties found
+          {sortedCollectibles.length} collectibles found
         </p>
-        <LuxuaryCollectibleList collectible={sortedCollectibles} />
+        <LuxuryCollectibleList collectibles={sortedCollectibles} searchQuery={searchQuery} />
       </div>
       <Footer />
     </>
