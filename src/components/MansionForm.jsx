@@ -34,7 +34,7 @@ const MansionForm = () => {
     phone: "",
     whatsaapno: "",
     callno: "",
-    category: "", // Added for Luxury Collectibles
+    category: "",
   });
 
   const [images, setImages] = useState([]);
@@ -43,6 +43,7 @@ const MansionForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [descriptionCharCount, setDescriptionCharCount] = useState(0); // New state for character count
 
   const BASE_URL =
     process.env.NODE_ENV === "production"
@@ -61,7 +62,6 @@ const MansionForm = () => {
         try {
           const response = await axios.get(`${BASE_URL}/api/propertyDetail/${id}`);
           const data = response.data;
-          // Normalize data for Luxury Collectibles
           const normalizedData = {
             ...data,
             size: data.propertytype === "Luxury Collectibles" ? "" : data.size || "",
@@ -78,9 +78,11 @@ const MansionForm = () => {
             tag: data.propertytype === "Luxury Collectibles" ? "" : data.tag || "",
             status: data.propertytype === "Luxury Collectibles" ? "" : data.status || "",
             amenities: data.propertytype === "Luxury Collectibles" ? "" : (Array.isArray(data.amenities) ? data.amenities.join(", ") : data.amenities || ""),
+            description: data.description || "", // Ensure description is preserved
           };
           setMansionData(normalizedData);
           setExistingImages(data.images || []);
+          setDescriptionCharCount(data.description ? data.description.length : 0); // Initialize char count
         } catch (error) {
           console.error("Error fetching property:", error);
           setSubmitError("Failed to load property data.");
@@ -96,6 +98,10 @@ const MansionForm = () => {
       ...prev,
       [name]: value,
     }));
+    // Update character count for description
+    if (name === "description") {
+      setDescriptionCharCount(value.length);
+    }
   };
 
   const compressImage = async (file) => {
@@ -139,7 +145,6 @@ const MansionForm = () => {
       const formData = new FormData();
       const isLuxuryCollectibles = mansionData.propertytype === "Luxury Collectibles";
 
-      // Define fields to include based on property type
       const fieldsToInclude = isLuxuryCollectibles
         ? [
             "reference",
@@ -159,7 +164,6 @@ const MansionForm = () => {
           ]
         : Object.keys(mansionData);
 
-      // Prepare the data to send by setting irrelevant fields to null for Luxury Collectibles
       const normalizedData = { ...mansionData };
       if (isLuxuryCollectibles) {
         const irrelevantFields = [
@@ -179,34 +183,35 @@ const MansionForm = () => {
           "amenities",
         ];
         irrelevantFields.forEach((field) => {
-          normalizedData[field] = null; // Set to null instead of empty string
+          normalizedData[field] = null;
         });
       }
 
-      // Append only the relevant fields to FormData
+      // Append fields to FormData, preserving newlines in description
       fieldsToInclude.forEach((key) => {
-        const value = normalizedData[key] !== null && normalizedData[key] !== undefined
-          ? normalizedData[key].toString()
-          : "";
+        let value = normalizedData[key];
+        if (key === "description") {
+          // Ensure newlines are preserved
+          value = value || "";
+          console.log("Description before submission:", value); // Debug log
+        } else {
+          value = value !== null && value !== undefined ? value.toString() : "";
+        }
         formData.append(key, value);
       });
 
-      // Append compressed images
       images.forEach((image) => {
         formData.append("images", image);
       });
 
-      // Append existing image URLs
       if (existingImages.length > 0) {
         formData.append("existingImages", JSON.stringify(existingImages));
       }
 
-      // Append compressed agent image
       if (agentimage) {
         formData.append("agentimage", agentimage);
       }
 
-      // Log FormData for debugging
       const formDataEntries = Object.fromEntries(formData);
       console.log("Sending form data:", formDataEntries);
 
@@ -259,6 +264,7 @@ const MansionForm = () => {
         setImages([]);
         setExistingImages([]);
         setAgentImage(null);
+        setDescriptionCharCount(0); // Reset char count
         document.querySelectorAll('input[type="file"]').forEach((input) => (input.value = ""));
       } else {
         navigate(`/dashboard`);
@@ -488,7 +494,7 @@ const MansionForm = () => {
               />
             </div>
             <div className="form-group md:col-span-2">
-              <label className="block text-gray-700 mb-2">Description*</label>
+              <label className="block text-gray-700 mb-2">Description* ({descriptionCharCount} characters)</label>
               <textarea
                 rows="4"
                 name="description"
@@ -497,6 +503,7 @@ const MansionForm = () => {
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 outline-none focus:border-green-500"
                 required
+                style={{ whiteSpace: "pre-wrap" }} // Preserve newlines in display
               ></textarea>
             </div>
             {!isLuxuryCollectibles && (

@@ -1,107 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import IconicForm from "../pages/IconicForm";
+import axios from "axios";
 
 const HomePageForm = () => {
   const [heroData, setHeroData] = useState({
     _id: null,
-    heading: '',
-    subheading: '',
+    heading: "",
+    subheading: "",
     image: null,
   });
   const [heroExistingImage, setHeroExistingImage] = useState(null);
 
   const [mansionData, setMansionData] = useState({
     _id: null,
-    description: '',
-    btntext: '',
-    ref1: '',
-    ref2: '',
-    ref3: '',
-    ref4: '',
+    description: "",
+    btntext: "",
+    ref1: "",
+    ref2: "",
+    ref3: "",
+    ref4: "",
   });
 
   const [penthouseData, setPenthouseData] = useState({
     _id: null,
-    description: '',
-    btntext: '',
-    ref1: '',
-    ref2: '',
-    ref3: '',
-    ref4: '',
+    description: "",
+    btntext: "",
+    ref1: "",
+    ref2: "",
+    ref3: "",
+    ref4: "",
   });
 
   const [collectiblesData, setCollectiblesData] = useState({
     _id: null,
-    description: '',
-    btntext: '',
-    ref1: '',
-    ref2: '',
-    ref3: '',
-    ref4: '',
+    description: "",
+    btntext: "",
+    ref1: "",
+    ref2: "",
+    ref3: "",
+    ref4: "",
   });
 
   const [magazineData, setMagazineData] = useState({
     _id: null,
-    heading: '',
-    subheading: '',
+    heading: "",
+    subheading: "",
     image: null,
   });
   const [magazineExistingImage, setMagazineExistingImage] = useState(null);
 
   const [featuredData, setFeaturedData] = useState({
     _id: null,
-    ref1: '',
-    ref2: '',
-    ref3: '',
-    ref4: '',
+    ref1: "",
+    ref2: "",
+    ref3: "",
+    ref4: "",
   });
 
   const [featuredProperties, setFeaturedProperties] = useState(null);
-  const [mansionFeaturedProperties, setMansionFeaturedProperties] = useState(null);
-  const [penthouseFeaturedProperties, setPenthouseFeaturedProperties] = useState(null);
-  const [collectiblesFeaturedProperties, setCollectiblesFeaturedProperties] = useState(null);
+  const [mansionFeaturedProperties, setMansionFeaturedProperties] =
+    useState(null);
+  const [penthouseFeaturedProperties, setPenthouseFeaturedProperties] =
+    useState(null);
+  const [collectiblesFeaturedProperties, setCollectiblesFeaturedProperties] =
+    useState(null);
 
   const [linksData, setLinksData] = useState({
     _id: null,
-    mansionText1: '',
-    mansionLink1: '',
-    mansionText2: '',
-    mansionLink2: '',
-    mansionText3: '',
-    mansionLink3: '',
-    mansionText4: '',
-    mansionLink4: '',
-    penthouseText1: '',
-    penthouseLink1: '',
-    penthouseText2: '',
-    penthouseLink2: '',
-    penthouseText3: '',
-    penthouseLink3: '',
-    penthouseText4: '',
-    penthouseLink4: '',
+    mansionText1: "",
+    mansionLink1: "",
+    mansionText2: "",
+    mansionLink2: "",
+    mansionText3: "",
+    mansionLink3: "",
+    mansionText4: "",
+    mansionLink4: "",
+    penthouseText1: "",
+    penthouseLink1: "",
+    penthouseText2: "",
+    penthouseLink2: "",
+    penthouseText3: "",
+    penthouseLink3: "",
+    penthouseText4: "",
+    penthouseLink4: "",
   });
 
   const [reviewData, setReviewData] = useState({
     _id: null,
-    reviewerName: '',
-    company: '',
-    content: '',
+    reviewerName: "",
+    company: "",
+    content: "",
     isApproved: false,
   });
 
   const [reviews, setReviews] = useState([]);
   const [messages, setMessages] = useState({
-    hero: '',
-    featured: '',
-    mansionContent: '',
-    mansionReferences: '',
-    penthouseContent: '',
-    penthouseReferences: '',
-    collectiblesContent: '',
-    collectiblesReferences: '',
-    magazine: '',
-    links: '',
-    review: '',
+    hero: "",
+    featured: "",
+    mansionContent: "",
+    mansionReferences: "",
+    penthouseContent: "",
+    penthouseReferences: "",
+    collectiblesContent: "",
+    collectiblesReferences: "",
+    magazine: "",
+    links: "",
+    review: "",
   });
   const [isLoading, setIsLoading] = useState({
     hero: false,
@@ -121,19 +125,21 @@ const HomePageForm = () => {
   const [validReferences, setValidReferences] = useState([]);
 
   const BASE_URL =
-    process.env.NODE_ENV === 'production'
-      ? 'https://backend-5kh4.onrender.com'
-      : 'http://localhost:5001';
+    process.env.NODE_ENV === "production"
+      ? "https://backend-5kh4.onrender.com"
+      : "http://localhost:5001";
 
   // Fetch data and valid references
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch valid references
-        const propertiesResponse = await axios.get(`${BASE_URL}/api/properties`);
+        const propertiesResponse = await axios.get(
+          `${BASE_URL}/api/properties`
+        );
         const references = propertiesResponse.data
-          .map(property => property.reference)
-          .filter(ref => ref);
+          .map((property) => property.reference)
+          .filter((ref) => ref);
         setValidReferences(references);
 
         // Hero
@@ -141,8 +147,8 @@ const HomePageForm = () => {
         if (heroResponse.data) {
           setHeroData({
             _id: heroResponse.data._id,
-            heading: heroResponse.data.heading || '',
-            subheading: heroResponse.data.subheading || '',
+            heading: heroResponse.data.heading || "",
+            subheading: heroResponse.data.subheading || "",
             image: null,
           });
           setHeroExistingImage(heroResponse.data.image || null);
@@ -154,21 +160,21 @@ const HomePageForm = () => {
         if (featuredResponse.data) {
           setFeaturedData({
             _id: featuredResponse.data._id,
-            ref1: featuredResponse.data.references?.[0] || '',
-            ref2: featuredResponse.data.references?.[1] || '',
-            ref3: featuredResponse.data.references?.[2] || '',
-            ref4: featuredResponse.data.references?.[3] || '',
+            ref1: featuredResponse.data.references?.[0] || "",
+            ref2: featuredResponse.data.references?.[1] || "",
+            ref3: featuredResponse.data.references?.[2] || "",
+            ref4: featuredResponse.data.references?.[3] || "",
           });
         }
 
         // Mansion
         const mansionResponse = await axios.get(`${BASE_URL}/api/mansion`);
         if (mansionResponse.data) {
-          setMansionData(prev => ({
+          setMansionData((prev) => ({
             ...prev,
             _id: mansionResponse.data._id,
-            description: mansionResponse.data.description || '',
-            btntext: mansionResponse.data.btntext || '',
+            description: mansionResponse.data.description || "",
+            btntext: mansionResponse.data.btntext || "",
           }));
         }
         const mansionFeaturedResponse = await axios.get(
@@ -176,23 +182,23 @@ const HomePageForm = () => {
         );
         setMansionFeaturedProperties(mansionFeaturedResponse.data || null);
         if (mansionFeaturedResponse.data) {
-          setMansionData(prev => ({
+          setMansionData((prev) => ({
             ...prev,
-            ref1: mansionFeaturedResponse.data.references?.[0] || '',
-            ref2: mansionFeaturedResponse.data.references?.[1] || '',
-            ref3: mansionFeaturedResponse.data.references?.[2] || '',
-            ref4: mansionFeaturedResponse.data.references?.[3] || '',
+            ref1: mansionFeaturedResponse.data.references?.[0] || "",
+            ref2: mansionFeaturedResponse.data.references?.[1] || "",
+            ref3: mansionFeaturedResponse.data.references?.[2] || "",
+            ref4: mansionFeaturedResponse.data.references?.[3] || "",
           }));
         }
 
         // Penthouse
         const penthouseResponse = await axios.get(`${BASE_URL}/api/penthouse`);
         if (penthouseResponse.data) {
-          setPenthouseData(prev => ({
+          setPenthouseData((prev) => ({
             ...prev,
             _id: penthouseResponse.data._id,
-            description: penthouseResponse.data.description || '',
-            btntext: penthouseResponse.data.btntext || '',
+            description: penthouseResponse.data.description || "",
+            btntext: penthouseResponse.data.btntext || "",
           }));
         }
         const penthouseFeaturedResponse = await axios.get(
@@ -200,12 +206,12 @@ const HomePageForm = () => {
         );
         setPenthouseFeaturedProperties(penthouseFeaturedResponse.data || null);
         if (penthouseFeaturedResponse.data) {
-          setPenthouseData(prev => ({
+          setPenthouseData((prev) => ({
             ...prev,
-            ref1: penthouseFeaturedResponse.data.references?.[0] || '',
-            ref2: penthouseFeaturedResponse.data.references?.[1] || '',
-            ref3: penthouseFeaturedResponse.data.references?.[2] || '',
-            ref4: penthouseFeaturedResponse.data.references?.[3] || '',
+            ref1: penthouseFeaturedResponse.data.references?.[0] || "",
+            ref2: penthouseFeaturedResponse.data.references?.[1] || "",
+            ref3: penthouseFeaturedResponse.data.references?.[2] || "",
+            ref4: penthouseFeaturedResponse.data.references?.[3] || "",
           }));
         }
 
@@ -214,11 +220,11 @@ const HomePageForm = () => {
           `${BASE_URL}/api/collectibles`
         );
         if (collectiblesResponse.data) {
-          setCollectiblesData(prev => ({
+          setCollectiblesData((prev) => ({
             ...prev,
             _id: collectiblesResponse.data._id,
-            description: collectiblesResponse.data.description || '',
-            btntext: collectiblesResponse.data.btntext || '',
+            description: collectiblesResponse.data.description || "",
+            btntext: collectiblesResponse.data.btntext || "",
           }));
         }
         const collectiblesFeaturedResponse = await axios.get(
@@ -228,12 +234,12 @@ const HomePageForm = () => {
           collectiblesFeaturedResponse.data || null
         );
         if (collectiblesFeaturedResponse.data) {
-          setCollectiblesData(prev => ({
+          setCollectiblesData((prev) => ({
             ...prev,
-            ref1: collectiblesFeaturedResponse.data.references?.[0] || '',
-            ref2: collectiblesFeaturedResponse.data.references?.[1] || '',
-            ref3: collectiblesFeaturedResponse.data.references?.[2] || '',
-            ref4: collectiblesFeaturedResponse.data.references?.[3] || '',
+            ref1: collectiblesFeaturedResponse.data.references?.[0] || "",
+            ref2: collectiblesFeaturedResponse.data.references?.[1] || "",
+            ref3: collectiblesFeaturedResponse.data.references?.[2] || "",
+            ref4: collectiblesFeaturedResponse.data.references?.[3] || "",
           }));
         }
 
@@ -242,8 +248,8 @@ const HomePageForm = () => {
         if (magazineResponse.data) {
           setMagazineData({
             _id: magazineResponse.data._id,
-            heading: magazineResponse.data.heading || '',
-            subheading: magazineResponse.data.subheading || '',
+            heading: magazineResponse.data.heading || "",
+            subheading: magazineResponse.data.subheading || "",
             image: null,
           });
           setMagazineExistingImage(magazineResponse.data.image || null);
@@ -254,22 +260,22 @@ const HomePageForm = () => {
         if (linksResponse.data) {
           setLinksData({
             _id: linksResponse.data._id,
-            mansionText1: linksResponse.data.mansionText1 || '',
-            mansionLink1: linksResponse.data.mansionLink1 || '',
-            mansionText2: linksResponse.data.mansionText2 || '',
-            mansionLink2: linksResponse.data.mansionLink2 || '',
-            mansionText3: linksResponse.data.mansionText3 || '',
-            mansionLink3: linksResponse.data.mansionLink3 || '',
-            mansionText4: linksResponse.data.mansionText4 || '',
-            mansionLink4: linksResponse.data.mansionLink4 || '',
-            penthouseText1: linksResponse.data.penthouseText1 || '',
-            penthouseLink1: linksResponse.data.penthouseLink1 || '',
-            penthouseText2: linksResponse.data.penthouseText2 || '',
-            penthouseLink2: linksResponse.data.penthouseLink2 || '',
-            penthouseText3: linksResponse.data.penthouseText3 || '',
-            penthouseLink3: linksResponse.data.penthouseLink3 || '',
-            penthouseText4: linksResponse.data.penthouseText4 || '',
-            penthouseLink4: linksResponse.data.penthouseLink4 || '',
+            mansionText1: linksResponse.data.mansionText1 || "",
+            mansionLink1: linksResponse.data.mansionLink1 || "",
+            mansionText2: linksResponse.data.mansionText2 || "",
+            mansionLink2: linksResponse.data.mansionLink2 || "",
+            mansionText3: linksResponse.data.mansionText3 || "",
+            mansionLink3: linksResponse.data.mansionLink3 || "",
+            mansionText4: linksResponse.data.mansionText4 || "",
+            mansionLink4: linksResponse.data.mansionLink4 || "",
+            penthouseText1: linksResponse.data.penthouseText1 || "",
+            penthouseLink1: linksResponse.data.penthouseLink1 || "",
+            penthouseText2: linksResponse.data.penthouseText2 || "",
+            penthouseLink2: linksResponse.data.penthouseLink2 || "",
+            penthouseText3: linksResponse.data.penthouseText3 || "",
+            penthouseLink3: linksResponse.data.penthouseLink3 || "",
+            penthouseText4: linksResponse.data.penthouseText4 || "",
+            penthouseLink4: linksResponse.data.penthouseLink4 || "",
           });
         }
 
@@ -278,26 +284,27 @@ const HomePageForm = () => {
           `${BASE_URL}/api/reviews/admin`,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
         setReviews(reviewsResponse.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setMessages(prev => ({
+        console.error("Error fetching data:", error);
+        setMessages((prev) => ({
           ...prev,
-          hero: 'Failed to load existing hero data.',
-          featured: 'Failed to load existing featured data.',
-          mansionContent: 'Failed to load existing mansion content.',
-          mansionReferences: 'Failed to load existing mansion references.',
-          penthouseContent: 'Failed to load existing penthouse content.',
-          penthouseReferences: 'Failed to load existing penthouse references.',
-          collectiblesContent: 'Failed to load existing collectibles content.',
-          collectiblesReferences: 'Failed to load existing collectibles references.',
-          magazine: 'Failed to load existing magazine data.',
-          links: 'Failed to load existing links data.',
-          review: 'Failed to load existing reviews.',
+          hero: "Failed to load existing hero data.",
+          featured: "Failed to load existing featured data.",
+          mansionContent: "Failed to load existing mansion content.",
+          mansionReferences: "Failed to load existing mansion references.",
+          penthouseContent: "Failed to load existing penthouse content.",
+          penthouseReferences: "Failed to load existing penthouse references.",
+          collectiblesContent: "Failed to load existing collectibles content.",
+          collectiblesReferences:
+            "Failed to load existing collectibles references.",
+          magazine: "Failed to load existing magazine data.",
+          links: "Failed to load existing links data.",
+          review: "Failed to load existing reviews.",
         }));
       }
     };
@@ -305,10 +312,10 @@ const HomePageForm = () => {
     fetchData();
   }, [BASE_URL]);
 
-  const handleHeroSubmit = async e => {
+  const handleHeroSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, hero: true }));
-    setMessages(prev => ({ ...prev, hero: '' }));
+    setIsLoading((prev) => ({ ...prev, hero: true }));
+    setMessages((prev) => ({ ...prev, hero: "" }));
 
     if (
       !heroData.heading &&
@@ -316,27 +323,27 @@ const HomePageForm = () => {
       !heroData.image &&
       heroExistingImage
     ) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        hero: 'At least one field must be updated when an image exists!',
+        hero: "At least one field must be updated when an image exists!",
       }));
-      setIsLoading(prev => ({ ...prev, hero: false }));
+      setIsLoading((prev) => ({ ...prev, hero: false }));
       return;
     }
 
     if (!heroData.heading && !heroData.subheading && !heroData.image) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        hero: 'At least one field is required!',
+        hero: "At least one field is required!",
       }));
-      setIsLoading(prev => ({ ...prev, hero: false }));
+      setIsLoading((prev) => ({ ...prev, hero: false }));
       return;
     }
 
     const formData = new FormData();
-    if (heroData.heading) formData.append('heading', heroData.heading);
-    if (heroData.subheading) formData.append('subheading', heroData.subheading);
-    if (heroData.image) formData.append('image', heroData.image);
+    if (heroData.heading) formData.append("heading", heroData.heading);
+    if (heroData.subheading) formData.append("subheading", heroData.subheading);
+    if (heroData.image) formData.append("image", heroData.image);
 
     try {
       let response;
@@ -346,51 +353,51 @@ const HomePageForm = () => {
           formData,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "multipart/form-data",
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          hero: 'Hero section updated successfully!',
+          hero: "Hero section updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/hero`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          hero: 'Hero section saved successfully!',
+          hero: "Hero section saved successfully!",
         }));
       }
 
       setHeroData({
         _id: response.data._id,
-        heading: response.data.heading || '',
-        subheading: response.data.subheading || '',
+        heading: response.data.heading || "",
+        subheading: response.data.subheading || "",
         image: null,
       });
       setHeroExistingImage(response.data.image || null);
     } catch (error) {
-      console.error('Error saving/updating hero section:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating hero section:", error);
+      setMessages((prev) => ({
         ...prev,
         hero:
-          error.response?.data?.error || 'Failed to save/update hero section',
+          error.response?.data?.error || "Failed to save/update hero section",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, hero: false }));
+      setIsLoading((prev) => ({ ...prev, hero: false }));
     }
   };
 
   const handleRemoveHeroImage = async () => {
     if (!heroData._id) return;
 
-    setIsLoading(prev => ({ ...prev, hero: true }));
-    setMessages(prev => ({ ...prev, hero: '' }));
+    setIsLoading((prev) => ({ ...prev, hero: true }));
+    setMessages((prev) => ({ ...prev, hero: "" }));
 
     try {
       const response = await axios.put(
@@ -398,60 +405,60 @@ const HomePageForm = () => {
         { removeImage: true },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
       setHeroExistingImage(null);
-      setHeroData(prev => ({
+      setHeroData((prev) => ({
         ...prev,
         image: null,
       }));
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        hero: 'Hero image removed successfully!',
+        hero: "Hero image removed successfully!",
       }));
     } catch (error) {
-      console.error('Error removing hero image:', error);
-      setMessages(prev => ({
+      console.error("Error removing hero image:", error);
+      setMessages((prev) => ({
         ...prev,
-        hero: error.response?.data?.error || 'Failed to remove hero image',
+        hero: error.response?.data?.error || "Failed to remove hero image",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, hero: false }));
+      setIsLoading((prev) => ({ ...prev, hero: false }));
     }
   };
 
-  const handleFeaturedSubmit = async e => {
+  const handleFeaturedSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, featured: true }));
-    setMessages(prev => ({ ...prev, featured: '' }));
+    setIsLoading((prev) => ({ ...prev, featured: true }));
+    setMessages((prev) => ({ ...prev, featured: "" }));
 
     const references = [
       featuredData.ref1,
       featuredData.ref2,
       featuredData.ref3,
       featuredData.ref4,
-    ].filter(ref => ref);
+    ].filter((ref) => ref);
 
     if (references.length === 0) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        featured: 'At least one reference number is required!',
+        featured: "At least one reference number is required!",
       }));
-      setIsLoading(prev => ({ ...prev, featured: false }));
+      setIsLoading((prev) => ({ ...prev, featured: false }));
       return;
     }
 
     // Validate references
     for (const ref of references) {
       if (!validReferences.includes(ref)) {
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
           featured: `Invalid reference number: ${ref}`,
         }));
-        setIsLoading(prev => ({ ...prev, featured: false }));
+        setIsLoading((prev) => ({ ...prev, featured: false }));
         return;
       }
     }
@@ -464,28 +471,40 @@ const HomePageForm = () => {
           { references },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          featured: 'Featured properties updated successfully!',
+          featured: "Featured properties updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/featured`, { references });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          featured: 'Featured properties saved successfully!',
+          featured: "Featured properties saved successfully!",
         }));
       }
 
       setFeaturedData({
         _id: response.data._id || response.data.data?._id,
-        ref1: response.data.references?.[0] || response.data.data?.references?.[0] || '',
-        ref2: response.data.references?.[1] || response.data.data?.references?.[1] || '',
-        ref3: response.data.references?.[2] || response.data.data?.references?.[2] || '',
-        ref4: response.data.references?.[3] || response.data.data?.references?.[3] || '',
+        ref1:
+          response.data.references?.[0] ||
+          response.data.data?.references?.[0] ||
+          "",
+        ref2:
+          response.data.references?.[1] ||
+          response.data.data?.references?.[1] ||
+          "",
+        ref3:
+          response.data.references?.[2] ||
+          response.data.data?.references?.[2] ||
+          "",
+        ref4:
+          response.data.references?.[3] ||
+          response.data.data?.references?.[3] ||
+          "",
       });
 
       const updatedFeaturedPropertiesResponse = await axios.get(
@@ -493,28 +512,29 @@ const HomePageForm = () => {
       );
       setFeaturedProperties(updatedFeaturedPropertiesResponse.data || null);
     } catch (error) {
-      console.error('Error saving/updating featured properties:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating featured properties:", error);
+      setMessages((prev) => ({
         ...prev,
         featured:
-          error.response?.data?.error || 'Failed to save/update featured properties',
+          error.response?.data?.error ||
+          "Failed to save/update featured properties",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, featured: false }));
+      setIsLoading((prev) => ({ ...prev, featured: false }));
     }
   };
 
-  const handleMansionContentSubmit = async e => {
+  const handleMansionContentSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, mansionContent: true }));
-    setMessages(prev => ({ ...prev, mansionContent: '' }));
+    setIsLoading((prev) => ({ ...prev, mansionContent: true }));
+    setMessages((prev) => ({ ...prev, mansionContent: "" }));
 
     if (!mansionData.description && !mansionData.btntext) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        mansionContent: 'At least one content field is required!',
+        mansionContent: "At least one content field is required!",
       }));
-      setIsLoading(prev => ({ ...prev, mansionContent: false }));
+      setIsLoading((prev) => ({ ...prev, mansionContent: false }));
       return;
     }
 
@@ -529,72 +549,73 @@ const HomePageForm = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          mansionContent: 'Mansion content updated successfully!',
+          mansionContent: "Mansion content updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/mansion`, {
           description: mansionData.description,
           btntext: mansionData.btntext,
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          mansionContent: 'Mansion content saved successfully!',
+          mansionContent: "Mansion content saved successfully!",
         }));
       }
 
-      setMansionData(prev => ({
+      setMansionData((prev) => ({
         ...prev,
         _id: response.data._id || prev._id,
-        description: response.data.description || '',
-        btntext: response.data.btntext || '',
+        description: response.data.description || "",
+        btntext: response.data.btntext || "",
       }));
     } catch (error) {
-      console.error('Error saving/updating mansion content:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating mansion content:", error);
+      setMessages((prev) => ({
         ...prev,
         mansionContent:
-          error.response?.data?.error || 'Failed to save/update mansion content',
+          error.response?.data?.error ||
+          "Failed to save/update mansion content",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, mansionContent: false }));
+      setIsLoading((prev) => ({ ...prev, mansionContent: false }));
     }
   };
 
-  const handleMansionReferencesSubmit = async e => {
+  const handleMansionReferencesSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, mansionReferences: true }));
-    setMessages(prev => ({ ...prev, mansionReferences: '' }));
+    setIsLoading((prev) => ({ ...prev, mansionReferences: true }));
+    setMessages((prev) => ({ ...prev, mansionReferences: "" }));
 
     const references = [
       mansionData.ref1,
       mansionData.ref2,
       mansionData.ref3,
       mansionData.ref4,
-    ].filter(ref => ref);
+    ].filter((ref) => ref);
 
     if (references.length === 0) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        mansionReferences: 'At least one reference number is required!',
+        mansionReferences: "At least one reference number is required!",
       }));
-      setIsLoading(prev => ({ ...prev, mansionReferences: false }));
+      setIsLoading((prev) => ({ ...prev, mansionReferences: false }));
       return;
     }
 
     // Validate references
     for (const ref of references) {
       if (!validReferences.includes(ref)) {
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
           mansionReferences: `Invalid reference number: ${ref}`,
         }));
-        setIsLoading(prev => ({ ...prev, mansionReferences: false }));
+        setIsLoading((prev) => ({ ...prev, mansionReferences: false }));
         return;
       }
     }
@@ -608,30 +629,42 @@ const HomePageForm = () => {
           { references },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          mansionReferences: 'Mansion references updated successfully!',
+          mansionReferences: "Mansion references updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/mansion/featured`, {
           references,
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          mansionReferences: 'Mansion references saved successfully!',
+          mansionReferences: "Mansion references saved successfully!",
         }));
       }
 
-      setMansionData(prev => ({
+      setMansionData((prev) => ({
         ...prev,
-        ref1: response.data.references?.[0] || response.data.data?.references?.[0] || '',
-        ref2: response.data.references?.[1] || response.data.data?.references?.[1] || '',
-        ref3: response.data.references?.[2] || response.data.data?.references?.[2] || '',
-        ref4: response.data.references?.[3] || response.data.data?.references?.[3] || '',
+        ref1:
+          response.data.references?.[0] ||
+          response.data.data?.references?.[0] ||
+          "",
+        ref2:
+          response.data.references?.[1] ||
+          response.data.data?.references?.[1] ||
+          "",
+        ref3:
+          response.data.references?.[2] ||
+          response.data.data?.references?.[2] ||
+          "",
+        ref4:
+          response.data.references?.[3] ||
+          response.data.data?.references?.[3] ||
+          "",
       }));
 
       const updatedMansionFeaturedResponse = await axios.get(
@@ -639,28 +672,29 @@ const HomePageForm = () => {
       );
       setMansionFeaturedProperties(updatedMansionFeaturedResponse.data || null);
     } catch (error) {
-      console.error('Error saving/updating mansion references:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating mansion references:", error);
+      setMessages((prev) => ({
         ...prev,
         mansionReferences:
-          error.response?.data?.error || 'Failed to save/update mansion references',
+          error.response?.data?.error ||
+          "Failed to save/update mansion references",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, mansionReferences: false }));
+      setIsLoading((prev) => ({ ...prev, mansionReferences: false }));
     }
   };
 
-  const handlePenthouseContentSubmit = async e => {
+  const handlePenthouseContentSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, penthouseContent: true }));
-    setMessages(prev => ({ ...prev, penthouseContent: '' }));
+    setIsLoading((prev) => ({ ...prev, penthouseContent: true }));
+    setMessages((prev) => ({ ...prev, penthouseContent: "" }));
 
     if (!penthouseData.description && !penthouseData.btntext) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        penthouseContent: 'At least one content field is required!',
+        penthouseContent: "At least one content field is required!",
       }));
-      setIsLoading(prev => ({ ...prev, penthouseContent: false }));
+      setIsLoading((prev) => ({ ...prev, penthouseContent: false }));
       return;
     }
 
@@ -675,73 +709,73 @@ const HomePageForm = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          penthouseContent: 'Penthouse content updated successfully!',
+          penthouseContent: "Penthouse content updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/penthouse`, {
           description: penthouseData.description,
           btntext: penthouseData.btntext,
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          penthouseContent: 'Penthouse content saved successfully!',
+          penthouseContent: "Penthouse content saved successfully!",
         }));
       }
 
-      setPenthouseData(prev => ({
+      setPenthouseData((prev) => ({
         ...prev,
         _id: response.data._id || prev._id,
-        description: response.data.description || '',
-        btntext: response.data.btntext || '',
+        description: response.data.description || "",
+        btntext: response.data.btntext || "",
       }));
     } catch (error) {
-      console.error('Error saving/updating penthouse content:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating penthouse content:", error);
+      setMessages((prev) => ({
         ...prev,
         penthouseContent:
           error.response?.data?.error ||
-          'Failed to save/update penthouse content',
+          "Failed to save/update penthouse content",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, penthouseContent: false }));
+      setIsLoading((prev) => ({ ...prev, penthouseContent: false }));
     }
   };
 
-  const handlePenthouseReferencesSubmit = async e => {
+  const handlePenthouseReferencesSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, penthouseReferences: true }));
-    setMessages(prev => ({ ...prev, penthouseReferences: '' }));
+    setIsLoading((prev) => ({ ...prev, penthouseReferences: true }));
+    setMessages((prev) => ({ ...prev, penthouseReferences: "" }));
 
     const references = [
       penthouseData.ref1,
       penthouseData.ref2,
       penthouseData.ref3,
       penthouseData.ref4,
-    ].filter(ref => ref);
+    ].filter((ref) => ref);
 
     if (references.length === 0) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        penthouseReferences: 'At least one reference number is required!',
+        penthouseReferences: "At least one reference number is required!",
       }));
-      setIsLoading(prev => ({ ...prev, penthouseReferences: false }));
+      setIsLoading((prev) => ({ ...prev, penthouseReferences: false }));
       return;
     }
 
     // Validate references
     for (const ref of references) {
       if (!validReferences.includes(ref)) {
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
           penthouseReferences: `Invalid reference number: ${ref}`,
         }));
-        setIsLoading(prev => ({ ...prev, penthouseReferences: false }));
+        setIsLoading((prev) => ({ ...prev, penthouseReferences: false }));
         return;
       }
     }
@@ -755,30 +789,42 @@ const HomePageForm = () => {
           { references },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          penthouseReferences: 'Penthouse references updated successfully!',
+          penthouseReferences: "Penthouse references updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/penthouse/featured`, {
           references,
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          penthouseReferences: 'Penthouse references saved successfully!',
+          penthouseReferences: "Penthouse references saved successfully!",
         }));
       }
 
-      setPenthouseData(prev => ({
+      setPenthouseData((prev) => ({
         ...prev,
-        ref1: response.data.references?.[0] || response.data.data?.references?.[0] || '',
-        ref2: response.data.references?.[1] || response.data.data?.references?.[1] || '',
-        ref3: response.data.references?.[2] || response.data.data?.references?.[2] || '',
-        ref4: response.data.references?.[3] || response.data.data?.references?.[3] || '',
+        ref1:
+          response.data.references?.[0] ||
+          response.data.data?.references?.[0] ||
+          "",
+        ref2:
+          response.data.references?.[1] ||
+          response.data.data?.references?.[1] ||
+          "",
+        ref3:
+          response.data.references?.[2] ||
+          response.data.data?.references?.[2] ||
+          "",
+        ref4:
+          response.data.references?.[3] ||
+          response.data.data?.references?.[3] ||
+          "",
       }));
 
       const updatedPenthouseFeaturedResponse = await axios.get(
@@ -788,28 +834,29 @@ const HomePageForm = () => {
         updatedPenthouseFeaturedResponse.data || null
       );
     } catch (error) {
-      console.error('Error saving/updating penthouse references:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating penthouse references:", error);
+      setMessages((prev) => ({
         ...prev,
         penthouseReferences:
-          error.response?.data?.error || 'Failed to save/update penthouse references',
+          error.response?.data?.error ||
+          "Failed to save/update penthouse references",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, penthouseReferences: false }));
+      setIsLoading((prev) => ({ ...prev, penthouseReferences: false }));
     }
   };
 
-  const handleCollectiblesContentSubmit = async e => {
+  const handleCollectiblesContentSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, collectiblesContent: true }));
-    setMessages(prev => ({ ...prev, collectiblesContent: '' }));
+    setIsLoading((prev) => ({ ...prev, collectiblesContent: true }));
+    setMessages((prev) => ({ ...prev, collectiblesContent: "" }));
 
     if (!collectiblesData.description && !collectiblesData.btntext) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        collectiblesContent: 'At least one content field is required!',
+        collectiblesContent: "At least one content field is required!",
       }));
-      setIsLoading(prev => ({ ...prev, collectiblesContent: false }));
+      setIsLoading((prev) => ({ ...prev, collectiblesContent: false }));
       return;
     }
 
@@ -824,73 +871,73 @@ const HomePageForm = () => {
           },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          collectiblesContent: 'Collectibles content updated successfully!',
+          collectiblesContent: "Collectibles content updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/collectibles`, {
           description: collectiblesData.description,
           btntext: collectiblesData.btntext,
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          collectiblesContent: 'Collectibles content saved successfully!',
+          collectiblesContent: "Collectibles content saved successfully!",
         }));
       }
 
-      setCollectiblesData(prev => ({
+      setCollectiblesData((prev) => ({
         ...prev,
         _id: response.data._id || prev._id,
-        description: response.data.description || '',
-        btntext: response.data.btntext || '',
+        description: response.data.description || "",
+        btntext: response.data.btntext || "",
       }));
     } catch (error) {
-      console.error('Error saving/updating collectibles content:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating collectibles content:", error);
+      setMessages((prev) => ({
         ...prev,
         collectiblesContent:
           error.response?.data?.error ||
-          'Failed to save/update collectibles content',
+          "Failed to save/update collectibles content",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, collectiblesContent: false }));
+      setIsLoading((prev) => ({ ...prev, collectiblesContent: false }));
     }
   };
 
-  const handleCollectiblesReferencesSubmit = async e => {
+  const handleCollectiblesReferencesSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, collectiblesReferences: true }));
-    setMessages(prev => ({ ...prev, collectiblesReferences: '' }));
+    setIsLoading((prev) => ({ ...prev, collectiblesReferences: true }));
+    setMessages((prev) => ({ ...prev, collectiblesReferences: "" }));
 
     const references = [
       collectiblesData.ref1,
       collectiblesData.ref2,
       collectiblesData.ref3,
       collectiblesData.ref4,
-    ].filter(ref => ref);
+    ].filter((ref) => ref);
 
     if (references.length === 0) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        collectiblesReferences: 'At least one reference number is required!',
+        collectiblesReferences: "At least one reference number is required!",
       }));
-      setIsLoading(prev => ({ ...prev, collectiblesReferences: false }));
+      setIsLoading((prev) => ({ ...prev, collectiblesReferences: false }));
       return;
     }
 
     // Validate references
     for (const ref of references) {
       if (!validReferences.includes(ref)) {
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
           collectiblesReferences: `Invalid reference number: ${ref}`,
         }));
-        setIsLoading(prev => ({ ...prev, collectiblesReferences: false }));
+        setIsLoading((prev) => ({ ...prev, collectiblesReferences: false }));
         return;
       }
     }
@@ -904,31 +951,43 @@ const HomePageForm = () => {
           { references },
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          collectiblesReferences: 'Collectibles references updated successfully!',
+          collectiblesReferences:
+            "Collectibles references updated successfully!",
         }));
       } else {
-        response = await axios.post(
-          `${BASE_URL}/api/collectibles/featured`,
-          { references }
-        );
-        setMessages(prev => ({
+        response = await axios.post(`${BASE_URL}/api/collectibles/featured`, {
+          references,
+        });
+        setMessages((prev) => ({
           ...prev,
-          collectiblesReferences: 'Collectibles references saved successfully!',
+          collectiblesReferences: "Collectibles references saved successfully!",
         }));
       }
 
-      setCollectiblesData(prev => ({
+      setCollectiblesData((prev) => ({
         ...prev,
-        ref1: response.data.references?.[0] || response.data.data?.references?.[0] || '',
-        ref2: response.data.references?.[1] || response.data.data?.references?.[1] || '',
-        ref3: response.data.references?.[2] || response.data.data?.references?.[2] || '',
-        ref4: response.data.references?.[3] || response.data.data?.references?.[3] || '',
+        ref1:
+          response.data.references?.[0] ||
+          response.data.data?.references?.[0] ||
+          "",
+        ref2:
+          response.data.references?.[1] ||
+          response.data.data?.references?.[1] ||
+          "",
+        ref3:
+          response.data.references?.[2] ||
+          response.data.data?.references?.[2] ||
+          "",
+        ref4:
+          response.data.references?.[3] ||
+          response.data.data?.references?.[3] ||
+          "",
       }));
 
       const updatedCollectiblesFeaturedResponse = await axios.get(
@@ -938,22 +997,22 @@ const HomePageForm = () => {
         updatedCollectiblesFeaturedResponse.data || null
       );
     } catch (error) {
-      console.error('Error saving/updating collectibles references:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating collectibles references:", error);
+      setMessages((prev) => ({
         ...prev,
         collectiblesReferences:
           error.response?.data?.error ||
-          'Failed to save/update collectibles references',
+          "Failed to save/update collectibles references",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, collectiblesReferences: false }));
+      setIsLoading((prev) => ({ ...prev, collectiblesReferences: false }));
     }
   };
 
-  const handleMagazineSubmit = async e => {
+  const handleMagazineSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, magazine: true }));
-    setMessages(prev => ({ ...prev, magazine: '' }));
+    setIsLoading((prev) => ({ ...prev, magazine: true }));
+    setMessages((prev) => ({ ...prev, magazine: "" }));
 
     if (
       !magazineData.heading &&
@@ -961,28 +1020,32 @@ const HomePageForm = () => {
       !magazineData.image &&
       magazineExistingImage
     ) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        magazine: 'At least one field must be updated when an image exists!',
+        magazine: "At least one field must be updated when an image exists!",
       }));
-      setIsLoading(prev => ({ ...prev, magazine: false }));
+      setIsLoading((prev) => ({ ...prev, magazine: false }));
       return;
     }
 
-    if (!magazineData.heading && !magazineData.subheading && !magazineData.image) {
-      setMessages(prev => ({
+    if (
+      !magazineData.heading &&
+      !magazineData.subheading &&
+      !magazineData.image
+    ) {
+      setMessages((prev) => ({
         ...prev,
-        magazine: 'At least one field is required!',
+        magazine: "At least one field is required!",
       }));
-      setIsLoading(prev => ({ ...prev, magazine: false }));
+      setIsLoading((prev) => ({ ...prev, magazine: false }));
       return;
     }
 
     const formData = new FormData();
-    if (magazineData.heading) formData.append('heading', magazineData.heading);
+    if (magazineData.heading) formData.append("heading", magazineData.heading);
     if (magazineData.subheading)
-      formData.append('subheading', magazineData.subheading);
-    if (magazineData.image) formData.append('image', magazineData.image);
+      formData.append("subheading", magazineData.subheading);
+    if (magazineData.image) formData.append("image", magazineData.image);
 
     try {
       let response;
@@ -992,52 +1055,52 @@ const HomePageForm = () => {
           formData,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-              'Content-Type': 'multipart/form-data',
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "multipart/form-data",
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          magazine: 'Magazine section updated successfully!',
+          magazine: "Magazine section updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/magazine`, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          magazine: 'Magazine section saved successfully!',
+          magazine: "Magazine section saved successfully!",
         }));
       }
 
       setMagazineData({
         _id: response.data._id,
-        heading: response.data.heading || '',
-        subheading: response.data.subheading || '',
+        heading: response.data.heading || "",
+        subheading: response.data.subheading || "",
         image: null,
       });
       setMagazineExistingImage(response.data.image || null);
     } catch (error) {
-      console.error('Error saving/updating magazine section:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating magazine section:", error);
+      setMessages((prev) => ({
         ...prev,
         magazine:
           error.response?.data?.error ||
-          'Failed to save/update magazine section',
+          "Failed to save/update magazine section",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, magazine: false }));
+      setIsLoading((prev) => ({ ...prev, magazine: false }));
     }
   };
 
   const handleRemoveMagazineImage = async () => {
     if (!magazineData._id) return;
 
-    setIsLoading(prev => ({ ...prev, magazine: true }));
-    setMessages(prev => ({ ...prev, magazine: '' }));
+    setIsLoading((prev) => ({ ...prev, magazine: true }));
+    setMessages((prev) => ({ ...prev, magazine: "" }));
 
     try {
       const response = await axios.put(
@@ -1045,36 +1108,36 @@ const HomePageForm = () => {
         { removeImage: true },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
       setMagazineExistingImage(null);
-      setMagazineData(prev => ({
+      setMagazineData((prev) => ({
         ...prev,
         image: null,
       }));
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        magazine: 'Magazine image removed successfully!',
+        magazine: "Magazine image removed successfully!",
       }));
     } catch (error) {
-      console.error('Error removing magazine image:', error);
-      setMessages(prev => ({
+      console.error("Error removing magazine image:", error);
+      setMessages((prev) => ({
         ...prev,
         magazine:
-          error.response?.data?.error || 'Failed to remove magazine image',
+          error.response?.data?.error || "Failed to remove magazine image",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, magazine: false }));
+      setIsLoading((prev) => ({ ...prev, magazine: false }));
     }
   };
 
-  const handleLinksSubmit = async e => {
+  const handleLinksSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, links: true }));
-    setMessages(prev => ({ ...prev, links: '' }));
+    setIsLoading((prev) => ({ ...prev, links: true }));
+    setMessages((prev) => ({ ...prev, links: "" }));
 
     const linksPayload = {
       mansionText1: linksData.mansionText1,
@@ -1096,15 +1159,15 @@ const HomePageForm = () => {
     };
 
     const hasAtLeastOneField = Object.values(linksPayload).some(
-      value => value && value.trim() !== ''
+      (value) => value && value.trim() !== ""
     );
 
     if (!hasAtLeastOneField) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        links: 'At least one field is required!',
+        links: "At least one field is required!",
       }));
-      setIsLoading(prev => ({ ...prev, links: false }));
+      setIsLoading((prev) => ({ ...prev, links: false }));
       return;
     }
 
@@ -1116,67 +1179,67 @@ const HomePageForm = () => {
           linksPayload,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          links: 'Links updated successfully!',
+          links: "Links updated successfully!",
         }));
       } else {
         response = await axios.post(`${BASE_URL}/api/links`, linksPayload);
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          links: 'Links saved successfully!',
+          links: "Links saved successfully!",
         }));
       }
 
       setLinksData({
         _id: response.data._id,
-        mansionText1: response.data.mansionText1 || '',
-        mansionLink1: response.data.mansionLink1 || '',
-        mansionText2: response.data.mansionText2 || '',
-        mansionLink2: response.data.mansionLink2 || '',
-        mansionText3: response.data.mansionText3 || '',
-        mansionLink3: response.data.mansionLink3 || '',
-        mansionText4: response.data.mansionText4 || '',
-        mansionLink4: response.data.mansionLink4 || '',
-        penthouseText1: response.data.penthouseText1 || '',
-        penthouseLink1: response.data.penthouseLink1 || '',
-        penthouseText2: response.data.penthouseText2 || '',
-        penthouseLink2: response.data.penthouseLink2 || '',
-        penthouseText3: response.data.penthouseText3 || '',
-        penthouseLink3: response.data.penthouseLink3 || '',
-        penthouseText4: response.data.penthouseText4 || '',
-        penthouseLink4: response.data.penthouseLink4 || '',
+        mansionText1: response.data.mansionText1 || "",
+        mansionLink1: response.data.mansionLink1 || "",
+        mansionText2: response.data.mansionText2 || "",
+        mansionLink2: response.data.mansionLink2 || "",
+        mansionText3: response.data.mansionText3 || "",
+        mansionLink3: response.data.mansionLink3 || "",
+        mansionText4: response.data.mansionText4 || "",
+        mansionLink4: response.data.mansionLink4 || "",
+        penthouseText1: response.data.penthouseText1 || "",
+        penthouseLink1: response.data.penthouseLink1 || "",
+        penthouseText2: response.data.penthouseText2 || "",
+        penthouseLink2: response.data.penthouseLink2 || "",
+        penthouseText3: response.data.penthouseText3 || "",
+        penthouseLink3: response.data.penthouseLink3 || "",
+        penthouseText4: response.data.penthouseText4 || "",
+        penthouseLink4: response.data.penthouseLink4 || "",
       });
     } catch (error) {
-      console.error('Error saving/updating links:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating links:", error);
+      setMessages((prev) => ({
         ...prev,
-        links: error.response?.data?.error || 'Failed to save/update links',
+        links: error.response?.data?.error || "Failed to save/update links",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, links: false }));
+      setIsLoading((prev) => ({ ...prev, links: false }));
     }
   };
 
-  const handleReviewSubmit = async e => {
+  const handleReviewSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(prev => ({ ...prev, review: true }));
-    setMessages(prev => ({ ...prev, review: '' }));
+    setIsLoading((prev) => ({ ...prev, review: true }));
+    setMessages((prev) => ({ ...prev, review: "" }));
 
     if (
       !reviewData.reviewerName ||
       !reviewData.company ||
       !reviewData.content
     ) {
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        review: 'All fields are required!',
+        review: "All fields are required!",
       }));
-      setIsLoading(prev => ({ ...prev, review: false }));
+      setIsLoading((prev) => ({ ...prev, review: false }));
       return;
     }
 
@@ -1195,57 +1258,52 @@ const HomePageForm = () => {
           reviewPayload,
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(prev => ({
+        setMessages((prev) => ({
           ...prev,
-          review: 'Review updated successfully!',
+          review: "Review updated successfully!",
         }));
       } else {
-        response = await axios.post(
-          `${BASE_URL}/api/reviews`,
-          reviewPayload,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
-        setMessages(prev => ({
+        response = await axios.post(`${BASE_URL}/api/reviews`, reviewPayload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setMessages((prev) => ({
           ...prev,
-          review: 'Review saved successfully!',
+          review: "Review saved successfully!",
         }));
       }
 
       const updatedReviews = await axios.get(`${BASE_URL}/api/reviews/admin`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       setReviews(updatedReviews.data);
 
       setReviewData({
         _id: null,
-        reviewerName: '',
-        company: '',
-        content: '',
+        reviewerName: "",
+        company: "",
+        content: "",
         isApproved: false,
       });
     } catch (error) {
-      console.error('Error saving/updating review:', error);
-      setMessages(prev => ({
+      console.error("Error saving/updating review:", error);
+      setMessages((prev) => ({
         ...prev,
-        review:
-          error.response?.data?.error || 'Failed to save/update review',
+        review: error.response?.data?.error || "Failed to save/update review",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, review: false }));
+      setIsLoading((prev) => ({ ...prev, review: false }));
     }
   };
 
-  const handleEditReview = review => {
+  const handleEditReview = (review) => {
     setReviewData({
       _id: review._id,
       reviewerName: review.reviewerName,
@@ -1255,48 +1313,48 @@ const HomePageForm = () => {
     });
   };
 
-  const handleDeleteReview = async reviewId => {
-    setIsLoading(prev => ({ ...prev, review: true }));
-    setMessages(prev => ({ ...prev, review: '' }));
+  const handleDeleteReview = async (reviewId) => {
+    setIsLoading((prev) => ({ ...prev, review: true }));
+    setMessages((prev) => ({ ...prev, review: "" }));
 
     try {
       await axios.delete(`${BASE_URL}/api/reviews/${reviewId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
       const updatedReviews = await axios.get(`${BASE_URL}/api/reviews/admin`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       setReviews(updatedReviews.data);
 
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
-        review: 'Review deleted successfully!',
+        review: "Review deleted successfully!",
       }));
     } catch (error) {
-      console.error('Error deleting review:', error);
-      setMessages(prev => ({
+      console.error("Error deleting review:", error);
+      setMessages((prev) => ({
         ...prev,
-        review: error.response?.data?.error || 'Failed to delete review',
+        review: error.response?.data?.error || "Failed to delete review",
       }));
     } finally {
-      setIsLoading(prev => ({ ...prev, review: false }));
+      setIsLoading((prev) => ({ ...prev, review: false }));
     }
   };
 
   const handleCancelEdit = () => {
     setReviewData({
       _id: null,
-      reviewerName: '',
-      company: '',
-      content: '',
+      reviewerName: "",
+      company: "",
+      content: "",
       isApproved: false,
     });
-    setMessages(prev => ({ ...prev, review: '' }));
+    setMessages((prev) => ({ ...prev, review: "" }));
   };
 
   return (
@@ -1316,13 +1374,13 @@ const HomePageForm = () => {
                     src={heroExistingImage}
                     alt="Hero"
                     className="w-32 h-32 object-cover rounded"
-                    onError={e => {
+                    onError={(e) => {
                       console.error(
-                        'Failed to load hero image:',
+                        "Failed to load hero image:",
                         heroExistingImage
                       );
                       e.target.src =
-                        'https://via.placeholder.com/128?text=Image+Not+Found';
+                        "https://via.placeholder.com/128?text=Image+Not+Found";
                     }}
                   />
                   <button
@@ -1339,7 +1397,7 @@ const HomePageForm = () => {
               type="file"
               name="heroImage"
               accept="image/*"
-              onChange={e =>
+              onChange={(e) =>
                 setHeroData({ ...heroData, image: e.target.files[0] })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1352,7 +1410,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={heroData.heading}
-              onChange={e =>
+              onChange={(e) =>
                 setHeroData({ ...heroData, heading: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1366,7 +1424,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={heroData.subheading}
-              onChange={e =>
+              onChange={(e) =>
                 setHeroData({ ...heroData, subheading: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1379,16 +1437,20 @@ const HomePageForm = () => {
               className="font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
               disabled={isLoading.hero}
             >
-              {isLoading.hero ? 'Saving...' : heroData._id ? 'Update' : 'Submit'}
+              {isLoading.hero
+                ? "Saving..."
+                : heroData._id
+                ? "Update"
+                : "Submit"}
             </button>
           </div>
         </form>
         {messages.hero && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.hero.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.hero.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.hero}
@@ -1401,7 +1463,7 @@ const HomePageForm = () => {
           Featured Listings Section
         </h2>
         <form onSubmit={handleFeaturedSubmit} className="space-y-4">
-          {[1, 2, 3, 4].map(index => (
+          {[1, 2, 3, 4].map((index) => (
             <div key={`featured-ref${index}`}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference No {index}
@@ -1409,7 +1471,7 @@ const HomePageForm = () => {
               <input
                 type="text"
                 value={featuredData[`ref${index}`]}
-                onChange={e =>
+                onChange={(e) =>
                   setFeaturedData({
                     ...featuredData,
                     [`ref${index}`]: e.target.value,
@@ -1426,16 +1488,20 @@ const HomePageForm = () => {
               className="font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
               disabled={isLoading.featured}
             >
-              {isLoading.featured ? 'Saving...' : featuredData._id ? 'Update' : 'Submit'}
+              {isLoading.featured
+                ? "Saving..."
+                : featuredData._id
+                ? "Update"
+                : "Submit"}
             </button>
           </div>
         </form>
         {messages.featured && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.featured.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.featured.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.featured}
@@ -1444,7 +1510,9 @@ const HomePageForm = () => {
       </div>
 
       <div className="bg-white shadow-md p-6 mb-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Mansion Section</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+          Mansion Section
+        </h2>
         <form onSubmit={handleMansionContentSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1453,7 +1521,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={mansionData.description}
-              onChange={e =>
+              onChange={(e) =>
                 setMansionData({ ...mansionData, description: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1467,7 +1535,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={mansionData.btntext}
-              onChange={e =>
+              onChange={(e) =>
                 setMansionData({ ...mansionData, btntext: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1481,19 +1549,19 @@ const HomePageForm = () => {
               disabled={isLoading.mansionContent}
             >
               {isLoading.mansionContent
-                ? 'Saving...'
+                ? "Saving..."
                 : mansionData._id
-                ? 'Update Content'
-                : 'Submit Content'}
+                ? "Update "
+                : "Submit "}
             </button>
           </div>
         </form>
         {messages.mansionContent && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.mansionContent.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.mansionContent.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.mansionContent}
@@ -1503,7 +1571,7 @@ const HomePageForm = () => {
           onSubmit={handleMansionReferencesSubmit}
           className="space-y-4 mt-6"
         >
-          {[1, 2, 3, 4].map(index => (
+          {[1, 2, 3, 4].map((index) => (
             <div key={`mansion-ref${index}`}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference No {index}
@@ -1511,7 +1579,7 @@ const HomePageForm = () => {
               <input
                 type="text"
                 value={mansionData[`ref${index}`]}
-                onChange={e =>
+                onChange={(e) =>
                   setMansionData({
                     ...mansionData,
                     [`ref${index}`]: e.target.value,
@@ -1529,19 +1597,19 @@ const HomePageForm = () => {
               disabled={isLoading.mansionReferences}
             >
               {isLoading.mansionReferences
-                ? 'Saving...'
+                ? "Saving..."
                 : mansionFeaturedProperties?._id
-                ? 'Update References'
-                : 'Submit References'}
+                ? "Update "
+                : "Submit "}
             </button>
           </div>
         </form>
         {messages.mansionReferences && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.mansionReferences.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.mansionReferences.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.mansionReferences}
@@ -1561,7 +1629,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={penthouseData.description}
-              onChange={e =>
+              onChange={(e) =>
                 setPenthouseData({
                   ...penthouseData,
                   description: e.target.value,
@@ -1578,7 +1646,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={penthouseData.btntext}
-              onChange={e =>
+              onChange={(e) =>
                 setPenthouseData({ ...penthouseData, btntext: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1592,19 +1660,19 @@ const HomePageForm = () => {
               disabled={isLoading.penthouseContent}
             >
               {isLoading.penthouseContent
-                ? 'Saving...'
+                ? "Saving..."
                 : penthouseData._id
-                ? 'Update Content'
-                : 'Submit Content'}
+                ? "Update "
+                : "Submit "}
             </button>
           </div>
         </form>
         {messages.penthouseContent && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.penthouseContent.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.penthouseContent.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.penthouseContent}
@@ -1614,7 +1682,7 @@ const HomePageForm = () => {
           onSubmit={handlePenthouseReferencesSubmit}
           className="space-y-4 mt-6"
         >
-          {[1, 2, 3, 4].map(index => (
+          {[1, 2, 3, 4].map((index) => (
             <div key={`penthouse-ref${index}`}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference No {index}
@@ -1622,7 +1690,7 @@ const HomePageForm = () => {
               <input
                 type="text"
                 value={penthouseData[`ref${index}`]}
-                onChange={e =>
+                onChange={(e) =>
                   setPenthouseData({
                     ...penthouseData,
                     [`ref${index}`]: e.target.value,
@@ -1641,19 +1709,19 @@ const HomePageForm = () => {
               disabled={isLoading.penthouseReferences}
             >
               {isLoading.penthouseReferences
-                ? 'Saving...'
+                ? "Saving..."
                 : penthouseFeaturedProperties?._id
-                ? 'Update References'
-                : 'Submit References'}
+                ? "Update "
+                : "Submit "}
             </button>
           </div>
         </form>
         {messages.penthouseReferences && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.penthouseReferences.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.penthouseReferences.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.penthouseReferences}
@@ -1673,7 +1741,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={collectiblesData.description}
-              onChange={e =>
+              onChange={(e) =>
                 setCollectiblesData({
                   ...collectiblesData,
                   description: e.target.value,
@@ -1690,7 +1758,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={collectiblesData.btntext}
-              onChange={e =>
+              onChange={(e) =>
                 setCollectiblesData({
                   ...collectiblesData,
                   btntext: e.target.value,
@@ -1707,19 +1775,19 @@ const HomePageForm = () => {
               disabled={isLoading.collectiblesContent}
             >
               {isLoading.collectiblesContent
-                ? 'Saving...'
+                ? "Saving..."
                 : collectiblesData._id
-                ? 'Update Content'
-                : 'Submit Content'}
+                ? "Update "
+                : "Submit "}
             </button>
           </div>
         </form>
         {messages.collectiblesContent && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.collectiblesContent.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.collectiblesContent.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.collectiblesContent}
@@ -1729,7 +1797,7 @@ const HomePageForm = () => {
           onSubmit={handleCollectiblesReferencesSubmit}
           className="space-y-4 mt-6"
         >
-          {[1, 2, 3, 4].map(index => (
+          {[1, 2, 3, 4].map((index) => (
             <div key={`collectibles-ref${index}`}>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference No {index}
@@ -1737,7 +1805,7 @@ const HomePageForm = () => {
               <input
                 type="text"
                 value={collectiblesData[`ref${index}`]}
-                onChange={e =>
+                onChange={(e) =>
                   setCollectiblesData({
                     ...collectiblesData,
                     [`ref${index}`]: e.target.value,
@@ -1755,19 +1823,19 @@ const HomePageForm = () => {
               disabled={isLoading.collectiblesReferences}
             >
               {isLoading.collectiblesReferences
-                ? 'Saving...'
+                ? "Saving..."
                 : collectiblesFeaturedProperties?._id
-                ? 'Update References'
-                : 'Submit References'}
+                ? "Update "
+                : "Submit "}
             </button>
           </div>
         </form>
         {messages.collectiblesReferences && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.collectiblesReferences.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.collectiblesReferences.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.collectiblesReferences}
@@ -1785,7 +1853,7 @@ const HomePageForm = () => {
               <h3 className="text-lg font-semibold mb-4 text-gray-800">
                 Mansion Links
               </h3>
-              {[1, 2, 3, 4].map(index => (
+              {[1, 2, 3, 4].map((index) => (
                 <div key={`mansion-${index}`} className="space-y-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1794,7 +1862,7 @@ const HomePageForm = () => {
                     <input
                       type="text"
                       value={linksData[`mansionText${index}`]}
-                      onChange={e =>
+                      onChange={(e) =>
                         setLinksData({
                           ...linksData,
                           [`mansionText${index}`]: e.target.value,
@@ -1811,7 +1879,7 @@ const HomePageForm = () => {
                     <input
                       type="url"
                       value={linksData[`mansionLink${index}`]}
-                      onChange={e =>
+                      onChange={(e) =>
                         setLinksData({
                           ...linksData,
                           [`mansionLink${index}`]: e.target.value,
@@ -1828,7 +1896,7 @@ const HomePageForm = () => {
               <h3 className="text-lg font-semibold mb-4 text-gray-800">
                 Penthouse Links
               </h3>
-              {[1, 2, 3, 4].map(index => (
+              {[1, 2, 3, 4].map((index) => (
                 <div key={`penthouse-${index}`} className="space-y-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1837,7 +1905,7 @@ const HomePageForm = () => {
                     <input
                       type="text"
                       value={linksData[`penthouseText${index}`]}
-                      onChange={e =>
+                      onChange={(e) =>
                         setLinksData({
                           ...linksData,
                           [`penthouseText${index}`]: e.target.value,
@@ -1854,7 +1922,7 @@ const HomePageForm = () => {
                     <input
                       type="url"
                       value={linksData[`penthouseLink${index}`]}
-                      onChange={e =>
+                      onChange={(e) =>
                         setLinksData({
                           ...linksData,
                           [`penthouseLink${index}`]: e.target.value,
@@ -1874,16 +1942,20 @@ const HomePageForm = () => {
               className="font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
               disabled={isLoading.links}
             >
-              {isLoading.links ? 'Saving...' : linksData._id ? 'Update' : 'Submit'}
+              {isLoading.links
+                ? "Saving..."
+                : linksData._id
+                ? "Update"
+                : "Submit"}
             </button>
           </div>
         </form>
         {messages.links && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.links.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.links.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.links}
@@ -1908,13 +1980,13 @@ const HomePageForm = () => {
                     src={magazineExistingImage}
                     alt="Magazine"
                     className="w-32 h-32 object-cover rounded"
-                    onError={e => {
+                    onError={(e) => {
                       console.error(
-                        'Failed to load magazine image:',
+                        "Failed to load magazine image:",
                         magazineExistingImage
                       );
                       e.target.src =
-                        'https://via.placeholder.com/128?text=Image+Not+Found';
+                        "https://via.placeholder.com/128?text=Image+Not+Found";
                     }}
                   />
                   <button
@@ -1931,7 +2003,7 @@ const HomePageForm = () => {
               type="file"
               name="magazineImage"
               accept="image/*"
-              onChange={e =>
+              onChange={(e) =>
                 setMagazineData({ ...magazineData, image: e.target.files[0] })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1944,7 +2016,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={magazineData.heading}
-              onChange={e =>
+              onChange={(e) =>
                 setMagazineData({ ...magazineData, heading: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1958,7 +2030,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={magazineData.subheading}
-              onChange={e =>
+              onChange={(e) =>
                 setMagazineData({ ...magazineData, subheading: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -1972,25 +2044,29 @@ const HomePageForm = () => {
               disabled={isLoading.magazine}
             >
               {isLoading.magazine
-                ? 'Saving...'
+                ? "Saving..."
                 : magazineData._id
-                ? 'Update'
-                : 'Submit'}
+                ? "Update"
+                : "Submit"}
             </button>
           </div>
         </form>
         {messages.magazine && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.magazine.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.magazine.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.magazine}
           </div>
         )}
       </div>
+
+      {/* The Spotlight On Iconic Estate |2025 EDITION */}
+      <IconicForm />
+
 
       <div className="bg-white shadow-md p-6 mb-6">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">
@@ -2004,7 +2080,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={reviewData.reviewerName}
-              onChange={e =>
+              onChange={(e) =>
                 setReviewData({ ...reviewData, reviewerName: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -2018,7 +2094,7 @@ const HomePageForm = () => {
             <input
               type="text"
               value={reviewData.company}
-              onChange={e =>
+              onChange={(e) =>
                 setReviewData({ ...reviewData, company: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -2031,7 +2107,7 @@ const HomePageForm = () => {
             </label>
             <textarea
               value={reviewData.content}
-              onChange={e =>
+              onChange={(e) =>
                 setReviewData({ ...reviewData, content: e.target.value })
               }
               className="w-full p-2 border outline-none mb-2"
@@ -2046,7 +2122,7 @@ const HomePageForm = () => {
             <input
               type="checkbox"
               checked={reviewData.isApproved}
-              onChange={e =>
+              onChange={(e) =>
                 setReviewData({ ...reviewData, isApproved: e.target.checked })
               }
               className="h-5 w-5 text-gray-900 border-gray-300 rounded"
@@ -2063,10 +2139,10 @@ const HomePageForm = () => {
                 disabled={isLoading.review}
               >
                 {isLoading.review
-                  ? 'Saving...'
+                  ? "Saving..."
                   : reviewData._id
-                  ? 'Update'
-                  : 'Submit'}
+                  ? "Update"
+                  : "Submit"}
               </button>
             </div>
             {reviewData._id && (
@@ -2085,9 +2161,9 @@ const HomePageForm = () => {
         {messages.review && (
           <div
             className={`mt-4 p-3 rounded-lg ${
-              messages.review.includes('success')
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
+              messages.review.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
             }`}
           >
             {messages.review}
@@ -2123,7 +2199,7 @@ const HomePageForm = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {reviews.map(review => (
+                  {reviews.map((review) => (
                     <tr key={review._id}>
                       <td className="px-4 py-2 border text-sm text-gray-600">
                         {review.reviewerName}
@@ -2135,7 +2211,7 @@ const HomePageForm = () => {
                         {review.content.substring(0, 50)}...
                       </td>
                       <td className="px-4 py-2 border text-sm text-gray-600">
-                        {review.isApproved ? 'Yes' : 'No'}
+                        {review.isApproved ? "Yes" : "No"}
                       </td>
                       <td className="px-4 py-2 border text-sm">
                         <button

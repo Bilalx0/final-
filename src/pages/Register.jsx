@@ -8,6 +8,8 @@ import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import { Menu, X } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6"; // Impor
+import AboutPageListing from "./AboutPageListing.jsx";
+import { Link } from "react-router-dom";
 
 const Register = () => {
   const listings1 = [
@@ -53,7 +55,11 @@ const Register = () => {
     },
   ];
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
+  const handleSearchChange = (query) => {
+    setSearchQuery(query);
+  };
   return (
     <>
       {/* Title and Search Bar */}
@@ -90,15 +96,15 @@ const Register = () => {
         </div>
         {menuOpen && (
           <div className="mt-2  ">
-            <div className="bg-white shadow-md  p-4  z-50 absolute w-full  right-0  px-20">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
-                { name: "New Developments", href: "/newdevelopment" },
+                { name: "Developments", href: "/newdevelopment" },
                 // { name: "Development", href: "/listingpage" },
                 { name: "Magazine", href: "/magazine" },
-                // { name: "Luxe Collectibles", href: "/listedcollectibles" },
+                { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
@@ -158,17 +164,13 @@ const Register = () => {
       </div>
 
       <div className="relative w-full h-screen">
-        {/* Background Image */}
         <img
           src={newImage}
           alt="Background"
           className="absolute inset-0 w-full h-full object-cover"
         />
 
-        {/* Black Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-
-        {/* Centered Text */}
         <div className="absolute inset-0 flex items-center justify-center p-8">
           <h1 className="text-white text-3xl md:text-5xl w-full max-w-[900px] leading-[1 !leading-[1] text-center font-playfair px-4">
             Connect with the best luxury real estate marketplace worldwide.
@@ -177,7 +179,6 @@ const Register = () => {
       </div>
 
       <div className="flex flex-col items-center justify-center min-h-screen px-6 py-16 bg-gray-50">
-        {/* Text Content */}
         <div className="max-w-2xl text-center space-y-8 font-inter">
           <p className="text-lg  text-center font-inter pb-8 leading-[2] ">
             Become a part of an elite marketplace for ultra-luxurious mansions
@@ -196,7 +197,6 @@ const Register = () => {
           </p>
         </div>
 
-        {/* Button */}
         <div className="mt-8">
           <button className="font-inter px-6 py-3 w-full md:w-[500px]  font-inter px-20 py-3 text-black  border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300   transition duration-300">
             Register Now
@@ -204,27 +204,27 @@ const Register = () => {
         </div>
       </div>
 
-      <div className="px-4 md:px-8 lg:px-20 py-12 border-t border-b border-[#00603A]">
-        {/* Section Title */}
+      {/* <div className="px-4 md:px-8 lg:px-20 py-12 border-t border-b border-[#00603A]">
+       
         <h2 className="text-2xl md:text-3xl text-center  text-[#00603A] font-playfair mt-2 mb-6">
           Newly Listed Penthouses
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-8">
           {listings1.map((listing) => (
             <div key={listing.id} className="overflow-hidden">
-              {/* Image */}
+          
               <img
                 src={listing.imageUrl}
                 alt={listing.location}
                 className="w-full h-96 object-cover"
               />
 
-              {/* Details */}
+          
               <div className="py-4">
                 <p className="text-black font-inter font-bold text-lg">
                   {listing.price}
                 </p>
-                {/* Bedrooms, Bathrooms, and Size */}
+            
                 <p className="font-inter text-gray-700 text-sm mt-2 mb-2">
                   {listing.bedrooms} Beds | {listing.bathrooms} Baths |{" "}
                   {listing.size} sqft
@@ -250,7 +250,8 @@ const Register = () => {
             Discover all
           </button>
         </div>
-      </div>
+      </div> */}
+      <AboutPageListing searchQuery={searchQuery} />
 
       <div className="flex flex-col md:flex-row items-center px-4 md:px-8   gap-8 py-12 space-y-8 md:space-y-0 mt-20 mb-24 ">
         {/* Image Section */}
@@ -274,9 +275,11 @@ const Register = () => {
             that celebrate the world of high-end real estate in Dubai and
             beyond.
           </p>
-          <button className="px-8 py-3 w-full mt-6 md:w-[300px] font-inter px-20 py-3 text-black  border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
-            Explore magazine
-          </button>
+          <Link to="/magazine">
+            <button className="px-8 py-3 w-full mt-6 md:w-[300px] font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
+              Explore magazine
+            </button>
+          </Link>
         </div>
       </div>
 

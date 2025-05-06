@@ -28,17 +28,19 @@ import CollectibleForm from "./components/Collectibles";
 import HomePageForm from "./components/HomePageForm";
 import NewDevelopmentForm from "./components/NewDevelopmentform";
 import MansionList from "./components/MansionList";
-import Login from "./components/Auth/Login"; // Imported from simplified codebase
-import Signup from "./components/Auth/Signup"; // Imported from simplified codebase
+import Login from "./components/Auth/Login";
+import Signup from "./components/Auth/Signup";
 import { MansionProvider } from "./context/MansionContext";
 import Admin from "./pages/Admin";
-import NewDevelopmentform from "./components/NewDevelopmentform";
 import LuxeCollectibles from "./pages/LuxeCollectibles";
 import { CollectiblesProvider } from "./context/CollectibleContext";
-
+import IconicForm from "./pages/IconicForm";
 
 function App() {
-  const isAuthenticated = !!localStorage.getItem("token");
+  const isAuthenticated = () => {
+    const token = localStorage.getItem("token");
+    return !!token && token !== "";
+  };
 
   return (
     <MansionProvider>
@@ -61,7 +63,6 @@ function App() {
             <Route path="/collectivelisting" element={<CollectiveListing />} />
             <Route path="/listedcollectibles" element={<LuxeCollectibles />} />
 
-
             {/* Form Routes */}
             <Route path="/create-post" element={<CreatePost />} />
             <Route path="/magazineform" element={<MagazineForm />} />
@@ -76,22 +77,20 @@ function App() {
             <Route path="/mansionlist" element={<MansionList />} />
             <Route path="/newdevelopmentform" element={<NewDevelopmentForm />} />
             <Route path="/newdevelopmentform/:id" element={<NewDevelopmentForm />} />
+            <Route path="/iconicform" element={<IconicForm />} />
 
             {/* Authentication Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/admin" element={<Admin />} />
 
-            {/* Protected Dashboard Route */}
+            {/* Protected Routes */}
             <Route
               path="/dashboard"
-              // element={<DashboardAdmin />}
-
-              element={isAuthenticated ? <DashboardAdmin /> : <Navigate to="/login" />}
+              element={isAuthenticated() ? <DashboardAdmin /> : <Navigate to="/login" />}
             />
             <Route
               path="/admin"
-              element={isAuthenticated ? <Admin /> : <Navigate to="/login" />}
+              element={isAuthenticated() ? <Admin /> : <Navigate to="/login" />}
             />
 
             {/* Catch-all Redirect */}

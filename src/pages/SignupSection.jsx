@@ -1,34 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Add useEffect
 import { FaSearch } from "react-icons/fa";
 import Footer from "../components/Footer";
 import Mockupimg from "../assests/Magaine Page Image.gif";
 import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import { Menu, X } from "lucide-react";
-import axios from "axios"; // Import axios
+import axios from "axios";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"; // Impor
+import { FaXTwitter } from "react-icons/fa6";
 
 const SignupSection = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [iconicData, setIconicData] = useState(null); // State to store fetched data
 
   const BASE_URL =
     process.env.NODE_ENV === "production"
       ? "https://backend-5kh4.onrender.com"
       : "http://localhost:5001";
 
+  // Fetch data from the API when the component mounts
+  useEffect(() => {
+    const fetchIconicData = async () => {
+      try {
+        const res = await axios.get(`${BASE_URL}/api/iconic`);
+        // Assuming the API returns an array, take the first item (or adjust based on your needs)
+        if (res.data && res.data.length > 0) {
+          setIconicData(res.data[0]); // Set the first item from the response
+        }
+      } catch (err) {
+        console.error("Error fetching iconic data:", err);
+      }
+    };
+
+    fetchIconicData();
+  }, []); // Empty dependency array to run only on mount
+
   const handleSubscribe = async (e) => {
     e.preventDefault();
 
     try {
-      const res = await axios.post(
-        "https://backend-5kh4.onrender.com/api/newsletter",
-        {
-          email,
-          category: "Magazine", // Set category to "Magazine"
-        }
-      );
+      const res = await axios.post(`${BASE_URL}/api/newsletter`, {
+        email,
+        category: "Magazine",
+      });
 
       setMessage(res.data.message);
       setEmail("");
@@ -43,11 +58,9 @@ const SignupSection = () => {
       <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-8">
         {/* Title and Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
-          {/* Logo */}
           <img src={logo} className="w-[250px] md:w-[400px]" alt="logo" />
 
           <div className="flex gap-2 w-full md:w-auto items-center">
-            {/* Search Bar */}
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
@@ -56,12 +69,10 @@ const SignupSection = () => {
               />
             </div>
 
-            {/* Search Button */}
             <button className="bg-[#00603A] px-4 py-[10px] flex items-center justify-center border border-[#00603A] text-white hover:text-[#00603A] hover:bg-transparent transition">
               <FaSearch className="font-thin hover:text-[#00603A]" />
             </button>
 
-            {/* Menu Icon (Visible on all screen sizes) */}
             <button className="p-2" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? (
                 <X className="w-6 h-6 text-[#000000]" />
@@ -72,35 +83,32 @@ const SignupSection = () => {
           </div>
         </div>
 
-        {/* Navigation Popup (Works on all screen sizes) */}
         {menuOpen && (
-          <div className="mt-2  ">
-            <div className="bg-white shadow-md  p-4  z-50 absolute w-full  right-0  px-20">
+          <div className="mt-2">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12 md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
                 { name: "New Developments", href: "/newdevelopment" },
-                // { name: "Development", href: "/listingpage" },
                 { name: "Magazine", href: "/magazine" },
-                // { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
-                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A]  text-lg"
+                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A] text-lg"
                 >
                   {link.name}
                 </a>
               ))}
 
               <p
-                className="flex justify-start border-t border-[#000000]  space-x-0 mt-3 pt-4 "
+                className="flex justify-start border-t border-[#000000] space-x-0 mt-3 pt-4"
                 style={{ textTransform: "capitalize" }}
               >
                 FOLLOW THE MANSION MARKET
               </p>
-              <div className="flex justify-start  mt-4 py-4 space-x-6 mb-2 ">
+              <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
                 <a
                   href="#"
                   className="text-[#00603A] hover:text-gray-400 text-2xl"
@@ -148,10 +156,12 @@ const SignupSection = () => {
           {/* Title */}
           <h2 className="text-xl md:text-2xl mb-8">
             <span className="text-[#00603A] font-playfair">
-              The Spotlight On Iconic Estate
+              {iconicData?.title || "The Spotlight On Iconic Estate"}
             </span>{" "}
             <span className="text-[#000000] font-inter font-thin pr-2">|</span>
-            <span className="text-black font-inter tracking-[4px]">2025</span>
+            <span className="text-black font-inter tracking-[4px]">
+              {iconicData?.year || "2025"}
+            </span>
             <span className="text-[#000000] font-inter font-thin">
               {" "}
               EDITION
@@ -160,20 +170,19 @@ const SignupSection = () => {
 
           {/* Description */}
           <p className="text-gray-600 w-full md:w-[400px] mb-6 leading-relaxed">
-            Be the first to receive our 2025 edition of SPOTLIGHTS ON by
-            subscribing now!
+            {iconicData?.description ||
+              "Be the first to receive our 2025 edition of SPOTLIGHTS ON by subscribing now!"}
           </p>
 
           {/* Subtext */}
           <p className="text-gray-700 font-medium mb-8">
-            Luxury Living | Expert Interviews | Travel to Luxury
+            {iconicData?.subtitle || "Luxury Living | Expert Interviews | Travel to Luxury"}
           </p>
 
           {/* Input & Button Container */}
           <div className="flex flex-col sm:flex-row gap-3 w-full max-w-md mb-4">
             <form onSubmit={handleSubscribe}>
               <div className="w-full">
-                {/* Input & Button */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="email"
@@ -184,7 +193,7 @@ const SignupSection = () => {
                     className="border border-gray-300 p-3 w-full sm:flex-1 focus:outline-none"
                   />
                   <button className="bg-[#00603A] text-white px-5 py-3 border border-[#00603A] hover:bg-[#ffffff] hover:text-[#00603A] transition-all">
-                    SIGN UP
+                    {iconicData?.btnText || "SIGN UP"}
                   </button>
                 </div>
               </div>
@@ -196,7 +205,7 @@ const SignupSection = () => {
         {/* Right Image with Left Border */}
         <div className="md:w-1/2 flex justify-center items-center mt-6 md:mt-0 border-0 lg:border-l lg:border-l-[#000000] pl-6">
           <img
-            src={Mockupimg}
+            src={iconicData?.photoHome || Mockupimg} // Use fetched image if available
             alt="Magazine Preview"
             className="max-w-full h-auto"
           />

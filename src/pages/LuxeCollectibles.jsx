@@ -10,6 +10,8 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const LuxeCollectibles = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeCompletion, setActiveCompletion] = useState(null);
+  const [activeFurnished, setActiveFurnished] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [filters, setFilters] = useState({
@@ -22,8 +24,10 @@ const LuxeCollectibles = () => {
   const { mansions, loading, error } = useMansions();
 
   const priceRef = useRef(null);
-  const categoryRef = useRef(null);
+  const sizeRef = useRef(null);
+  const bedroomsRef = useRef(null);
   const moreRef = useRef(null);
+  const categoryRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -117,17 +121,33 @@ const LuxeCollectibles = () => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
-  const categories = [...new Set(mansions.map((item) => item.category))].filter(Boolean);
+  const categories = [...new Set(mansions.map((item) => item.category))].filter(
+    Boolean
+  );
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">Error: {error.message}</div>;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        Error: {error.message}
+      </div>
+    );
 
   return (
     <>
-      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-10">
-        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8 relative">
-          <img src={logo} className="w-[250px] md:w-[400px]" alt="logo" />
-          <div className="flex gap-4 w-full md:w-auto items-center">
+      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-8">
+        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
+          <img
+            src={logo}
+            className="w-[250px] md:w-[400px] mb-6 md:mb-0"
+            alt="logo"
+          />
+          <div className="flex gap-2 w-full md:w-auto items-center pl-4 md:pl-0">
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
@@ -152,10 +172,11 @@ const LuxeCollectibles = () => {
 
         {menuOpen && (
           <div className="mt-2">
-            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-20">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
+                { name: "Penthouses", href: "/penthouses" },
                 { name: "Development", href: "/newdevelopment" },
                 { name: "Magazine", href: "/magazine" },
               ].map((link, index) => (
@@ -219,50 +240,101 @@ const LuxeCollectibles = () => {
           Explore luxurious collectibles for sale globally
         </h2>
         <p className="text-sm font-inter md:text-lg text-gray-600 text-center max-w-3xl leading-relaxed">
-          Discover a curated selection of exceptional luxury collectibles from around the
-          globe at The Mansion Market. Each listing is handpicked to meet your
-          ultra-luxury requirements, offering unparalleled elegance, opulence,
-          and craftsmanship.
+          Discover a curated selection of exceptional luxury collectibles from
+          around the globe at The Mansion Market. Each listing is handpicked to
+          meet your ultra-luxury requirements, offering unparalleled elegance,
+          opulence, and craftsmanship.
         </p>
 
         <div className="flex flex-wrap pt-6 gap-4 items-center w-full justify-between">
           <div className="flex gap-4">
-            <div className="relative" ref={categoryRef}>
+            <div className="relative" ref={sizeRef}>
               <button
-                onClick={() => toggleDropdown("category")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                onClick={() => toggleDropdown("size")}
+                className="px-3 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
-                Category
+                Size
               </button>
-              {activeDropdown === "category" && (
-                <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A] shadow-lg p-4">
+              {activeDropdown === "size" && (
+                <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A]shadow-lg p-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600">
-                      Category
+                      Size Range (sq.ft)
                     </label>
-                    <select
-                      name="category"
-                      value={filters.category}
-                      onChange={handleFilterChange}
-                      className="border border-gray-300 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
-                    >
-                      <option value="">All Categories</option>
-                      {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        name="minSize"
+                        placeholder="Min"
+                        value={filters.minSize}
+                        onChange={handleFilterChange}
+                        className="border border-gray-300 px-3 py-1 w-1/2 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
+                      />
+                      <input
+                        type="number"
+                        name="maxSize"
+                        placeholder="Max"
+                        value={filters.maxSize}
+                        onChange={handleFilterChange}
+                        className="border border-gray-300 px-3 py-1 w-1/2 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
+                      />
+                    </div>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded text-sm"
+                        className="px-3 py-1 rounded-none border border-gray-300 text-gray-600 hover:bg-gray-100 rounded-none text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
+                        className="px-3 py-1 rounded-none bg-[#00603A] text-white hover:bg-[#004e30] rounded-none text-sm"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Bedrooms Dropdown */}
+            <div className="relative" ref={bedroomsRef}>
+              <button
+                onClick={() => toggleDropdown("bedrooms")}
+                className="px-2 py-2 border border-[#00603A] text-[#00603A] rounded-none bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+              >
+                Bedrooms
+              </button>
+              {activeDropdown === "bedrooms" && (
+                <div className="absolute z-10 mt-2 w-48 bg-white border border-[#00603A]shadow-lg p-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-sm font-medium text-gray-600">
+                      Bedrooms
+                    </label>
+                    <select
+                      name="bedrooms"
+                      value={filters.bedrooms}
+                      onChange={handleFilterChange}
+                      className="border border-gray-300 px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
+                    >
+                      <option value="">Any</option>
+                      <option value="1">1+</option>
+                      <option value="2">2+</option>
+                      <option value="3">3+</option>
+                      <option value="4">4+</option>
+                      <option value="5">5+</option>
+                      <option value="6">6+</option>
+                    </select>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={resetFilters}
+                        className="px-3 py-1 border rounded-none border-gray-300 text-gray-600 hover:bg-gray-100  text-sm"
+                      >
+                        Reset
+                      </button>
+                      <button
+                        onClick={() => setActiveDropdown(null)}
+                        className="px-3 py-1 bg-[#00603A] rounded-none text-white hover:bg-[#004e30] text-sm"
                       >
                         Apply
                       </button>
@@ -275,12 +347,12 @@ const LuxeCollectibles = () => {
             <div className="relative" ref={priceRef}>
               <button
                 onClick={() => toggleDropdown("price")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                className="px-2 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
                 Price
               </button>
               {activeDropdown === "price" && (
-                <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A] shadow-lg p-4">
+                <div className="absolute  -left-40 md:left-0 mt-2 w-[280px] bg-white shadow-lg border border-gray-300 p-4  z-10">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600">
                       Price Range (USD)
@@ -306,13 +378,13 @@ const LuxeCollectibles = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded text-sm"
+                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded-none text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
+                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded-none text-sm"
                       >
                         Apply
                       </button>
@@ -322,32 +394,59 @@ const LuxeCollectibles = () => {
               )}
             </div>
 
+            {/* More Dropdown */}
             <div className="relative" ref={moreRef}>
               <button
                 onClick={() => toggleDropdown("more")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                className="px-2 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
                 More
               </button>
               {activeDropdown === "more" && (
-                <div className="absolute z-10 mt-2 w-48 bg-white border border-[#00603A] rounded-md shadow-lg p-4">
+                <div className="absolute -left-48 md:left-0 mt-2  w-54  md:w-80  bg-white shadow-lg border border-gray-300 p-4 z-10">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-600">
-                      Additional Filters
-                    </label>
-                    <p className="text-gray-600 text-sm">
-                      More filters coming soon...
-                    </p>
+                    <h2 className="my-4"> Completion</h2>
+                    <div className="flex flex-wrap justify-start md:justify-between  gap-2 md:gap-0">
+                      {["Any", "Ready", "Under Construction"].map((option) => (
+                        <button
+                          key={option}
+                          className={`px-2 py-2 font-inter border border-[#00603A] transition-all duration-300 ${
+                            activeCompletion === option
+                              ? "bg-[#00603A] text-white"
+                              : "text-black"
+                          } hover:bg-[#00603A] hover:text-white`}
+                          onClick={() => setActiveCompletion(option)}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                    <h2 className="my-4">Furnished</h2>
+                    <div className="flex gap-4">
+                      {["Any", "Yes", "No"].map((option) => (
+                        <button
+                          key={option}
+                          className={`px-2 py-2 font-inter border border-[#00603A] transition-all duration-300 ${
+                            activeFurnished === option
+                              ? "bg-[#00603A] text-white"
+                              : "text-black"
+                          } hover:bg-[#00603A] hover:text-white`}
+                          onClick={() => setActiveFurnished(option)}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>{" "}
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded text-sm"
+                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
+                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
                       >
                         Apply
                       </button>
@@ -369,10 +468,13 @@ const LuxeCollectibles = () => {
             <option value="price_high">Price (High to Low)</option>
           </select>
         </div>
-        <p className="text-gray-600">
+        {/* <p className="text-gray-600">
           {sortedCollectibles.length} collectibles found
-        </p>
-        <LuxuryCollectibleList collectibles={sortedCollectibles} searchQuery={searchQuery} />
+        </p> */}
+        <LuxuryCollectibleList
+          collectibles={sortedCollectibles}
+          searchQuery={searchQuery}
+        />
       </div>
       <Footer />
     </>

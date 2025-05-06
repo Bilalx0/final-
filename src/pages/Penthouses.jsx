@@ -6,12 +6,13 @@ import { Menu, X } from "lucide-react";
 import PenthouseList from "../components/PenthouseList";
 import { useMansions } from "../context/MansionContext";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"; // Impor
+import { FaXTwitter } from "react-icons/fa6";
+import MansionCard from "../components/Card";
 
 const Penthouses = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeDropdown, setActiveDropdown] = useState(null); // Track which dropdown is open
+  const [activeDropdown, setActiveDropdown] = useState(null);
   const [filters, setFilters] = useState({
     bedrooms: "",
     minPrice: "",
@@ -19,16 +20,16 @@ const Penthouses = () => {
     minSize: "",
     maxSize: "",
     sortBy: "newest",
+    projectstatus: "Any",
+    furnishingtype: "Any",
   });
   const { mansions } = useMansions();
 
-  // Refs for each dropdown to handle click-outside
   const sizeRef = useRef(null);
   const bedroomsRef = useRef(null);
   const priceRef = useRef(null);
   const moreRef = useRef(null);
 
-  // Handle click outside to close dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -50,74 +51,10 @@ const Penthouses = () => {
     };
   }, []);
 
-  // Split search query into individual terms
-  const searchTerms = searchQuery
-    .toLowerCase()
-    .split(" ")
-    .filter((term) => term);
-
-  // Filter penthouses based on search query and filters
-  const filteredPenthouses = mansions.filter((mansion) => {
-    if (mansion.propertytype !== "Penthouse") return false;
-
-    if (searchTerms.length > 0) {
-      const matchesSearch = searchTerms.some((term) =>
-        [
-          mansion.country,
-          mansion.area,
-          mansion.district,
-          mansion.city,
-          mansion.community,
-          mansion.subcommunity,
-        ].some((field) => field && field.toLowerCase().includes(term))
-      );
-      if (!matchesSearch) return false;
-    }
-
-    if (filters.bedrooms && mansion.bedrooms < parseInt(filters.bedrooms)) {
-      return false;
-    }
-
-    if (filters.minPrice && mansion.price < parseInt(filters.minPrice)) {
-      return false;
-    }
-    if (filters.maxPrice && mansion.price > parseInt(filters.maxPrice)) {
-      return false;
-    }
-
-    if (filters.minSize && mansion.size < parseInt(filters.minSize)) {
-      return false;
-    }
-    if (filters.maxSize && mansion.size > parseInt(filters.maxSize)) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Sort the filtered penthouses
-  const sortedPenthouses = [...filteredPenthouses].sort((a, b) => {
-    switch (filters.sortBy) {
-      case "price_low":
-        return a.price - b.price;
-      case "price_high":
-        return b.price - a.price;
-      case "size_low":
-        return a.size - b.size;
-      case "size_high":
-        return b.size - a.size;
-      case "newest":
-      default:
-        return a.reference < b.reference ? 1 : -1;
-    }
-  });
-
-  // Handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
@@ -126,7 +63,20 @@ const Penthouses = () => {
     }));
   };
 
-  // Reset filters
+  const handleProjectStatusChange = (option) => {
+    setFilters((prev) => ({
+      ...prev,
+      projectstatus: option,
+    }));
+  };
+
+  const handleFurnishingTypeChange = (option) => {
+    setFilters((prev) => ({
+      ...prev,
+      furnishingtype: option,
+    }));
+  };
+
   const resetFilters = () => {
     setFilters({
       bedrooms: "",
@@ -135,21 +85,34 @@ const Penthouses = () => {
       minSize: "",
       maxSize: "",
       sortBy: "newest",
+      projectstatus: "Any",
+      furnishingtype: "Any",
     });
     setActiveDropdown(null);
   };
 
-  // Toggle dropdown
   const toggleDropdown = (dropdown) => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
+  // Filter mansions for the featured section
+  const featuredMansions = mansions
+    .filter((mansion) =>
+      ["Mansion", "Penthouse"].includes(mansion.propertytype)
+    )
+    .sort((a, b) => (a.reference < b.reference ? 1 : -1))
+    .slice(0, 6);
+
   return (
     <>
-      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-10">
-        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8 relative">
-          <img src={logo} className="w-[250px] md:w-[400px]" alt="logo" />
-          <div className="flex gap-4 w-full md:w-auto items-center">
+      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-8">
+        <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
+          <img
+            src={logo}
+            className="w-[250px] md:w-[400px] mb-6 md:mb-0"
+            alt="logo"
+          />
+          <div className="flex gap-2 w-full md:w-auto items-center pl-4 md:pl-0">
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
@@ -172,34 +135,31 @@ const Penthouses = () => {
           </div>
         </div>
 
-        {/* Navigation Popup */}
         {menuOpen && (
-          <div className="mt-2  ">
-            <div className="bg-white shadow-md  p-4  z-50 absolute w-full  right-0  px-20">
+          <div className="mt-2">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12 md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Development", href: "/newdevelopment" },
-                // { name: "New Developments", href: "/listingpage" },
                 { name: "Magazine", href: "/magazine" },
-                // { name: "Luxe Collectibles", href: "/listingpage" },
+                { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
-                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A]  text-lg"
+                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A] text-lg"
                 >
                   {link.name}
                 </a>
               ))}
-
               <p
-                className="flex justify-start border-t border-[#000000]  space-x-0 mt-3 pt-4 "
+                className="flex justify-start border-t border-[#000000] space-x-0 mt-3 pt-4"
                 style={{ textTransform: "capitalize" }}
               >
                 FOLLOW THE MANSION MARKET
               </p>
-              <div className="flex justify-start  mt-4 py-4 space-x-6 mb-2 ">
+              <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
                 <a
                   href="#"
                   className="text-[#00603A] hover:text-gray-400 text-2xl"
@@ -249,19 +209,18 @@ const Penthouses = () => {
           ultra-luxury requirements, offering unparalleled elegance, opulence,
           and breathtaking views.
         </p>
-        {/* Filters Section */}
+
         <div className="flex flex-wrap pt-6 gap-4 items-center w-full justify-between">
-          <div className="flex gap-4">
-            {/* Size Dropdown */}
+          <div className="flex gap-2 md:gap-4">
             <div className="relative" ref={sizeRef}>
               <button
                 onClick={() => toggleDropdown("size")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                className="px-3 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
                 Size
               </button>
               {activeDropdown === "size" && (
-                <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A]shadow-lg p-4">
+                <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A] shadow-lg p-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600">
                       Size Range (sq.ft)
@@ -287,13 +246,13 @@ const Penthouses = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 rounded text-sm"
+                        className="px-3 py-1 rounded-none border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] rounded text-sm"
+                        className="px-3 py-1 rounded-none bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
                       >
                         Apply
                       </button>
@@ -303,16 +262,15 @@ const Penthouses = () => {
               )}
             </div>
 
-            {/* Bedrooms Dropdown */}
             <div className="relative" ref={bedroomsRef}>
               <button
                 onClick={() => toggleDropdown("bedrooms")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                className="px-3 py-2 border border-[#00603A] text-[#00603A] rounded-none bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
                 Bedrooms
               </button>
               {activeDropdown === "bedrooms" && (
-                <div className="absolute z-10 mt-2 w-48 bg-white border border-[#00603A]shadow-lg p-4">
+                <div className="absolute z-10 mt-2 w-48 bg-white border border-[#00603A] shadow-lg p-4">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600">
                       Bedrooms
@@ -334,13 +292,13 @@ const Penthouses = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100  text-sm"
+                        className="px-3 py-1 border rounded-none border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
+                        className="px-3 py-1 rounded-none bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
                       >
                         Apply
                       </button>
@@ -350,19 +308,18 @@ const Penthouses = () => {
               )}
             </div>
 
-            {/* Price Dropdown */}
             <div className="relative" ref={priceRef}>
               <button
                 onClick={() => toggleDropdown("price")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                className="px-3 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
                 Price
               </button>
               {activeDropdown === "price" && (
-                <div className="absolute z-10 mt-2 w-64 bg-white border border-[#00603A] shadow-lg p-4">
+                <div className="absolute -left-40 md:left-0 mt-2 w-[280px] bg-white shadow-lg border border-gray-300 p-4 z-10">
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium text-gray-600">
-                      Price Range (USD)
+                      Price Range
                     </label>
                     <div className="flex gap-2">
                       <input
@@ -385,13 +342,13 @@ const Penthouses = () => {
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
-                        className="px-3 py-1 border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
+                        className="px-3 py-1 border rounded-none border-gray-300 text-gray-600 hover:bg-gray-100 text-sm"
                       >
                         Reset
                       </button>
                       <button
                         onClick={() => setActiveDropdown(null)}
-                        className="px-3 py-1 bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
+                        className="px-3 py-1 rounded-none bg-[#00603A] text-white hover:bg-[#004e30] text-sm"
                       >
                         Apply
                       </button>
@@ -401,23 +358,48 @@ const Penthouses = () => {
               )}
             </div>
 
-            {/* More Dropdown */}
             <div className="relative" ref={moreRef}>
               <button
                 onClick={() => toggleDropdown("more")}
-                className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                className="px-3 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
               >
                 More
               </button>
               {activeDropdown === "more" && (
-                <div className="absolute z-10 mt-2 w-48 bg-white border border-[#00603A] rounded-md shadow-lg p-4">
+                <div className="absolute -left-48 md:left-0 mt-2 w-54 md:w-80 bg-white shadow-lg border border-gray-300 p-4 z-10">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium text-gray-600">
-                      Additional Filters
-                    </label>
-                    <p className="text-gray-600 text-sm">
-                      More filters coming soon...
-                    </p>
+                    <h2 className="my-4">Project Status</h2>
+                    <div className="flex flex-wrap justify-start md:justify-between gap-2 md:gap-0">
+                      {["Any", "Ready", "Under Construction"].map((option) => (
+                        <button
+                          key={option}
+                          className={`px-2 py-2 font-inter border border-[#00603A] transition-all duration-300 ${
+                            filters.projectstatus === option
+                              ? "bg-[#00603A] text-white"
+                              : "text-black"
+                          } hover:bg-[#00603A] hover:text-white`}
+                          onClick={() => handleProjectStatusChange(option)}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                    <h2 className="my-4">Furnishing Type</h2>
+                    <div className="flex gap-4">
+                      {["Any", "Furnished", "Unfurnished"].map((option) => (
+                        <button
+                          key={option}
+                          className={`px-2 py-2 font-inter border border-[#00603A] transition-all duration-300 ${
+                            filters.furnishingtype === option
+                              ? "bg-[#00603A] text-white"
+                              : "text-black"
+                          } hover:bg-[#00603A] hover:text-white`}
+                          onClick={() => handleFurnishingTypeChange(option)}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={resetFilters}
@@ -438,12 +420,11 @@ const Penthouses = () => {
             </div>
           </div>
 
-          {/* Sort Dropdown */}
           <select
             name="sortBy"
             value={filters.sortBy}
             onChange={handleFilterChange}
-            className="px-4 py-2 border border-[#00603A] text-[#00603A] bg-white text-sm font-medium focus:outline-none focus:ring-1 focus:ring-[#00603A] appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTUgNmw1IDUgNS01IDIgMS03IDctNy03IDItMXoiIGZpbGw9IiMwMDYwM0EiLz48L3N2Zz4=')] bg-no-repeat bg-[right_0.5rem_center] bg-[length:12px]"
+            className="px-4 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white text-sm font-medium focus:outline-none focus:ring-1 focus:ring-[#00603A] appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTUgNmw1IDUgNS01IDIgMS03IDctNy03IDItMXoiIGZpbGw9IiMwMDYwM0EiLz48L3N2Zz4=')] bg-no-repeat bg-[right_0.5rem_center] bg-[length:12px]"
           >
             <option value="newest">Sort by Featured</option>
             <option value="price_low">Price (Low to High)</option>
@@ -452,10 +433,24 @@ const Penthouses = () => {
             <option value="size_high">Size (Large to Small)</option>
           </select>
         </div>
-        <p className="text-gray-600">
-          {sortedPenthouses.length} properties found
-        </p>
-        <PenthouseList penthouses={sortedPenthouses} />
+
+        <PenthouseList searchQuery={searchQuery} filters={filters} />
+      </div>
+      <div className="py-10 border-t-2 border-[#00603A]">
+        <h2 className="text-2xl md:text-3xl text-center font-playfair text-[#00603A] mb-8">
+          Mansions And Penthouses For Sale
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4">
+          {featuredMansions.length > 0 ? (
+            featuredMansions.map((mansion) => (
+              <MansionCard key={mansion.reference} mansion={mansion} />
+            ))
+          ) : (
+            <p className="text-gray-600 text-center w-full text-lg py-8 col-span-full">
+              No mansions or penthouses available at the moment.
+            </p>
+          )}
+        </div>
       </div>
       <Footer />
     </>

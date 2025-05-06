@@ -15,6 +15,11 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const BASE_URL =
+    process.env.NODE_ENV === "production"
+      ? "https://backend-5kh4.onrender.com"
+      : "http://localhost:5001";
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -40,20 +45,26 @@ const Signup = () => {
     console.log("Sending payload:", payload);
 
     try {
-      const response = await axios.post("https://backend-5kh4.onrender.com/api/auth/signup", payload);
+      const response = await axios.post(`${BASE_URL}/api/auth/signup`, payload);
       console.log("Signup Response:", response.data);
-      localStorage.setItem("token", response.data.token || "");
+      if (!response.data.token) {
+        throw new Error("No token received from server");
+      }
+      // Clear localStorage to avoid stale data
+      localStorage.clear();
+      // Store new data
+      localStorage.setItem("token", response.data.token);
       localStorage.setItem("role", response.data.role || formData.role);
       localStorage.setItem("firstName", response.data.firstName || "");
       localStorage.setItem("lastName", response.data.lastName || "");
-      console.log("Stored in localStorage:", localStorage);
+      localStorage.setItem("muted", "false"); // Explicitly set muted
+      console.log("Stored in localStorage:", { ...localStorage });
       setLoading(false);
-      
-      // Navigate based on role
+      // Navigate based on role with replace: true
       if (formData.role === "admin") {
-        navigate("/dashboard");
+        navigate("/admin", { replace: true });
       } else if (formData.role === "superadmin") {
-        navigate("/admin");
+        navigate("/dashboard", { replace: true });
       }
     } catch (error) {
       setLoading(false);

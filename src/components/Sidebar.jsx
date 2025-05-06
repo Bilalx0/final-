@@ -36,6 +36,13 @@ const Sidebar = ({ setViewType }) => {
       <h2 className="text-xl mb-16">Welcome, {fullName}</h2>
       <ul className="space-y-8 font-inter mb-8">
         <li
+          onClick={() => setViewType("userdata")}
+          className="hover:bg-green-700 p-2 w-[200px] mb-4 border cursor-pointer flex items-center gap-4"
+        >
+          <img src={leadslogo} alt="Leads" className="w-6 h-6" /> All Users
+          Detail
+        </li>
+        <li
           onClick={() => setViewType("leads")}
           className="hover:bg-green-700 p-2 w-[200px] mb-4 border cursor-pointer flex items-center gap-4"
         >

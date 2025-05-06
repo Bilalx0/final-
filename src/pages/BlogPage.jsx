@@ -205,7 +205,7 @@ const BlogPage = () => {
                   <img
                     src={
                       news.mainImage
-                        ? `http://localhost:5001${news.mainImage}`
+                        ? `${news.mainImage}`
                         : newImage
                     }
                     alt={news.title}

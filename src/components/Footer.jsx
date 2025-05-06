@@ -109,48 +109,49 @@ const Footer = () => {
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-20 z-50">
               <div className="w-[90%] md:w-[600px] p-6 relative">
                 <button
-                  className="absolute top-1 right-6 text-gray-600 text-xl hover:text-black"
+                  className="absolute top-1 right-6 text-[#000000] text-xl hover:text-black"
                   onClick={() => setIsOpen(false)}
                 >
                   ✕
                 </button>
-                <div className="border bg-white border-[#00603A] mt-4 p-12">
-                  <h2 className="text-[#00603A] font-playfair text-3xl text-center">
-                    The Newsletter
-                  </h2>
-                  <p className="text-gray-700 text-center mt-4">
-                    Sign-up for our meticulously crafted collection highlighting
-                    the hottest luxury offerings, accompanied by exclusive
-                    insights.
-                  </p>
-                  <form onSubmit={handleSubscribe}>
-                    <div className="mt-8 flex items-center gap-2">
-                      <input
-                        type="email"
-                        placeholder="email@example.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="flex-1 px-4 py-2 border text-[#000000] border-gray-300 outline-none"
-                        required
-                      />
-                      <button className="font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
-                        SIGN UP
-                      </button>
-                    </div>
-                    <span>
-                      {message && (
-                        <p
-                          className={
-                            message.includes("error")
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }
-                        >
-                          {message}
-                        </p>
-                      )}
-                    </span>
-                  </form>
+                <div className="border bg-white border-[#00603A] mt-4 p-8 md:p-12">
+                  {message ? (
+                    <p
+                      className={`text-center text-xl ${
+                        message.includes("error")
+                          ? "text-red-600"
+                          : "text-[#00603A]"
+                      }`}
+                    >
+                      {message}
+                    </p>
+                  ) : (
+                    <>
+                      <h2 className="text-[#00603A] font-playfair text-2xl md:text-3xl text-center">
+                        The Newsletter
+                      </h2>
+                      <p className="text-gray-700 text-center mt-4">
+                        Sign-up for our meticulously crafted collection
+                        highlighting the hottest luxury offerings, accompanied
+                        by exclusive insights.
+                      </p>
+                      <form onSubmit={handleSubscribe}>
+                        <div className="mt-8 flex items-center flex-col md:flex-row gap-2">
+                          <input
+                            type="email"
+                            placeholder="email@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="flex-1 px-4 py-2 border text-[#000000] border-gray-300 outline-none"
+                            required
+                          />
+                          <button className="font-inter px-8 md:px-12 py-[8px] text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
+                            SIGN UP
+                          </button>
+                        </div>
+                      </form>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

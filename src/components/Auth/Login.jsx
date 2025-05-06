@@ -24,21 +24,29 @@ const Login = () => {
 
     try {
       const response = await axios.post(`${BASE_URL}/api/auth/login`, formData);
-      console.log("API Response:", response.data); // Debug response
+      console.log("API Response:", response.data);
       if (!response.data.token) {
         throw new Error("No token received from server");
       }
+      // Clear localStorage to avoid stale data
+      localStorage.clear();
+      // Store new data
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("role", response.data.role || "");
       localStorage.setItem("firstName", response.data.firstName || "");
       localStorage.setItem("lastName", response.data.lastName || "");
-      console.log("Local Storage:", localStorage); // Debug localStorage
+      localStorage.setItem("muted", "false"); // Explicitly set muted
+      console.log("Local Storage:", { ...localStorage });
       setLoading(false);
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       setLoading(false);
-      console.error("Login Error:", error); // Debug error
-      setError(error.response?.data?.message || error.message || "Login failed");
+      console.error("Login Error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Login failed. Please check your credentials.";
+      setError(errorMessage);
     }
   };
 

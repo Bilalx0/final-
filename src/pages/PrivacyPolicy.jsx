@@ -46,15 +46,15 @@ const PrivacyPolicy = () => {
         {/* Navigation Popup (Works on all screen sizes) */}
         {menuOpen && (
           <div className="mt-2  ">
-            <div className="bg-white shadow-md  p-4  z-50 absolute w-full  right-0  px-20">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
-                { name: "New Developments", href: "/newdevelopment" },
+                { name: "Developments", href: "/newdevelopment" },
                 // { name: "Development", href: "/listingpage" },
                 { name: "Magazine", href: "/magazine" },
-                // { name: "Luxe Collectibles", href: "/listedcollectibles" },
+                { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import MansionCard from "./Card";
+import MansionCard from "../components/Card";
 
-const FeaturedListings = ({ searchQuery }) => {
+const AboutPageListing = ({ searchQuery }) => {
   // State for all data
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [mansionFeatured, setMansionFeatured] = useState([]);
@@ -263,37 +263,9 @@ const FeaturedListings = ({ searchQuery }) => {
       {/* Regular Featured Sections - now written out individually */}
       {(!hasSearched || !searchQuery.trim()) && (
         <>
-          {/* Featured Listings Section */}
-          <div className="px-4 md:px-8 lg:px-20 py-16 border-b border-[#00603A]">
-            <h2 className="text-2xl md:text-3xl text-center md:text-left font-playfair text-[#00603A] mb-6">
-              Featured Listings
-            </h2>
-            {loading.featured ? (
-              <p className="text-center text-gray-600 col-span-4">
-                Loading featured listings...
-              </p>
-            ) : errors.featured ? (
-              <p className="text-center text-red-600 col-span-4">
-                {errors.featured}
-              </p>
-            ) : featuredProperties.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 py-8">
-                  {featuredProperties.map((mansion) => (
-                    <MansionCard key={mansion.reference} mansion={mansion} />
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-gray-600 col-span-4">
-                No featured properties available
-              </p>
-            )}
-          </div>
-
           {/* Mansion Featured Section */}
           <div className="px-4 md:px-8 lg:px-20 py-20 border-b border-[#00603A]">
-            <h2 className="text-2xl md:text-3xl text-center md:text-left font-playfair text-[#00603A] mb-6">
+            <h2 className="text-2xl md:text-3xl text-center  text-[#00603A] font-playfair mt-2 mb-6">
               Newly Listed Mansions
             </h2>
             {loading.mansions ? (
@@ -331,7 +303,7 @@ const FeaturedListings = ({ searchQuery }) => {
 
           {/* Penthouse Featured Section */}
           <div className="px-4 md:px-8 lg:px-20 py-20 border-b border-[#00603A]">
-            <h2 className="text-2xl md:text-3xl text-center md:text-left font-playfair text-[#00603A] mb-6">
+            <h2 className="text-2xl md:text-3xl text-center  text-[#00603A] font-playfair mt-2 mb-6">
               Newly Listed Penthouses
             </h2>
             {loading.penthouses ? (
@@ -366,48 +338,10 @@ const FeaturedListings = ({ searchQuery }) => {
               </p>
             )}
           </div>
-
-          {/* Collectibles Featured Section */}
-          <div className="px-4 md:px-8 lg:px-20 py-20 border-b border-[#00603A]">
-            <h2 className="text-2xl md:text-3xl text-center md:text-left font-playfair text-[#00603A] mb-6">
-              Newly Listed Collectibles
-            </h2>
-            {loading.collectibles ? (
-              <p className="text-center text-gray-600 col-span-4">
-                Loading featured collectibles...
-              </p>
-            ) : errors.collectibles ? (
-              <p className="text-center text-red-600 col-span-4">
-                {errors.collectibles}
-              </p>
-            ) : collectiblesFeatured.length > 0 ? (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 py-8">
-                  {collectiblesFeatured.map((mansion) => (
-                    <MansionCard key={mansion.reference} mansion={mansion} />
-                  ))}
-                </div>
-                <div className="flex flex-col md:flex-row items-center justify-between  space-y-6 md:space-y-0">
-                  <p className="font-inter text-gray-600 text-center md:text-left max-w-2xl">
-                    {collectiblesDescription}
-                  </p>
-                  <a href="/collectibles">
-                    <button className="font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
-                      {collectiblesBtnText}
-                    </button>
-                  </a>
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-gray-600 col-span-4">
-                No featured collectibles available
-              </p>
-            )}
-          </div>
         </>
       )}
     </>
   );
 };
 
-export default FeaturedListings;
+export default AboutPageListing;

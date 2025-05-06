@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useMansions } from "../context/MansionContext";
@@ -32,60 +33,116 @@ import sharelogoHover from "../assests/Share Icon White.svg";
 import newImage1 from "../assests/image 5.png";
 import newImage2 from "../assests/BrandedResi-P.jpg";
 import newImage3 from "../assests/Mansions.jpg";
-import ImageGallery from "../components/ImageGallery";
 import MansionCard from "../components/Card";
 import Footer from "../components/Footer";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
-// Custom Phone Input Component
-const CustomPhoneInput = ({ value, onChange, required }) => {
-  const [countryCode, setCountryCode] = useState("+971");
-  const [phoneNumber, setPhoneNumber] = useState(value.replace(countryCode, "") || "");
+const ImageGallery = ({ images, property }) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-  const countryCodes = [
-    { code: "+971", label: "+971 (UAE)" },
-    { code: "+1", label: "+1 (USA)" },
-    { code: "+44", label: "+44 (UK)" },
-    { code: "+91", label: "+91 (India)" },
-    { code: "+966", label: "+966 (Saudi Arabia)" },
-  ];
-
+  // Disable body scrolling when modal is open
   useEffect(() => {
-    onChange(`${countryCode}${phoneNumber}`);
-  }, [countryCode, phoneNumber, onChange]);
-
-  const handlePhoneNumberChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "");
-    setPhoneNumber(value);
-  };
+    if (isOpen) {
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Restore scrolling
+    }
+  }, [isOpen]);
 
   return (
-    <div className="flex items-center w-full">
-      <select
-        value={countryCode}
-        onChange={(e) => setCountryCode(e.target.value)}
-        className="border p-2 bg-[#f5f5f5] text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
-        aria-label="Country code"
+    <div className="w-full absolute bottom-4 left-4">
+      {/* Show All Photos Button */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="absolute bottom-8 right-16 bg-white bg-opacity-75 hover:text-white text-black px-8 py-2 border border-[#00603A] hover:bg-[#00603A] transition-all duration-300"
       >
-        {countryCodes.map((option) => (
-          <option key={option.code} value={option.code}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <input
-        type="text"
-        value={phoneNumber}
-        onChange={handlePhoneNumberChange}
-        placeholder="Phone number"
-        required={required}
-        className="border p-2 w-full border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
-        aria-label="Phone number"
-      />
+        Show All Photos
+      </button>
+
+      {/* Popup Modal (Single Scrollable Container) */}
+      {isOpen && (
+        <div className="fixed inset-0 flex justify-center items-start z-50  bg-white overflow-y-auto">
+          {/* Fixed Close Button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="fixed top-4 right-8 text-[#000000] hover:text-[#00603A] px-3 py-1 rounded-md text-xl z-50"
+          >
+            ✕
+          </button>
+
+          {/* Modal Content (Moved Down) */}
+          <div className="relative p-5 w-full mt-16 mb-8  ">
+            {/* Images and Text Layout */}
+            <div className="flex flex-col md:flex-row gap-4 md:h-auto">
+              {/* 🟢 Images Container (First on mobile, second on desktop) */}
+              <div className="flex flex-col w-full md:w-[75%] order-1 md:order-2">
+                {images.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`Image ${index + 1}`}
+                    className="w-full h-auto mb-4"
+                  />
+                ))}
+              </div>
+
+              {/* 🟢 Text Container (Second on mobile, first on desktop) */}
+              <div className="w-full md:w-[25%] p-4 md:sticky md:top-4 self-start order-2 md:order-1">
+                <div className="flex flex-col  mt-4 py-6 md:mt-6  md:space-y-0">
+                  <h3 className="text-3xl font-playfair break-words text-[#000000] mb-8 bg-white">
+                  {property.title || "Untitled Property"}
+                  </h3>
+
+                  <p className="text-base break-words font-inter pt-8 border-t border-[#00603A]">
+                    {property.propertytype || "Property Type"} | {property.bedrooms || "Bedrooms"} beds | {property.bathrooms || "Bathrooms"} baths | {property.area || "Area"} sq. ft. | {property.plotarea || "Plot Area"} sq. ft. plot
+                  </p>
+                </div>
+
+                <div className="flex gap-2 mt-4 border-b pb-4">
+                      <a
+                        href={`https://wa.me/${
+                          property.whatsaapno ||
+                          property.whatsappNo ||
+                          "+971501234567"
+                        }`}
+                        className="text-[#00603A] font-inter flex items-center space-x-1"
+                      >
+                        <FaWhatsapp />
+                        <span>WhatsApp</span>
+                      </a>
+                      <span className="text-[#f5f5f5]">|</span>
+                      <a
+                        href={`tel:${
+                          property.callno || property.callNo || "+971501234567"
+                        }`}
+                        className="text-[#00603A] font-inter flex items-center space-x-1"
+                      >
+                        <FaPhoneAlt />
+                        <span>Call</span>
+                      </a>
+                    </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
+
 const ListingPage = () => {
+  const [phonenumber, setphonenumber] = useState("");
+  const handleChangenumber = (value) => {
+    setphonenumber(value);
+  };
+
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const handleViewMore = () => {
+    setVisibleCount((prev) => prev + 6);
+  };
   const { reference } = useParams();
   const { mansions, loading, error } = useMansions();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -189,8 +246,12 @@ const ListingPage = () => {
     return (
       <div className="p-4 max-w-3xl mx-auto text-center">
         <div className="bg-red-50 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-red-700">Error loading property</h2>
-          <p className="text-red-600 mt-2">{error.message || "Please try again later."}</p>
+          <h2 className="text-xl font-semibold text-red-700">
+            Error loading property
+          </h2>
+          <p className="text-red-600 mt-2">
+            {error.message || "Please try again later."}
+          </p>
         </div>
       </div>
     );
@@ -199,7 +260,8 @@ const ListingPage = () => {
   const property = mansions?.find((m) => m.reference === reference) || {
     propertytype: "Mansion",
     title: "Exquisite villa in Palm Jumeirah with private pool",
-    subtitle: "Presidential penthouse in luxury branded residence on Palm Jumeirah",
+    subtitle:
+      "Presidential penthouse in luxury branded residence on Palm Jumeirah",
     status: "For Sale",
     tag: "Exclusive",
     price: "95,000,000",
@@ -232,7 +294,7 @@ const ListingPage = () => {
     videoLink: "https://www.youtube.com/embed/example",
     agentimage: newImage1,
     agentImage: newImage1,
-    category: "Luxury Villa", // For Collectible
+    category: "Luxury Villa",
   };
 
   // Dynamic similar listings
@@ -308,13 +370,19 @@ const ListingPage = () => {
 
   const encodeShareText = () => {
     return encodeURIComponent(
-      `Check out this ${property.propertytype}: ${property.title} - AED ${property.price || "N/A"} in ${property.community || property.category || "N/A"}, ${property.country || "N/A"}`
+      `Check out this ${property.propertytype}: ${property.title} - AED ${
+        property.price || "N/A"
+      } in ${property.community || property.category || "N/A"}, ${
+        property.country || "N/A"
+      }`
     );
   };
 
   const shareToFacebook = () => {
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getShareUrl())}`,
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        getShareUrl()
+      )}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -327,7 +395,9 @@ const ListingPage = () => {
 
   const shareToLinkedIn = () => {
     window.open(
-      `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(getShareUrl())}&title=${encodeShareText()}`,
+      `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+        getShareUrl()
+      )}&title=${encodeShareText()}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -335,7 +405,9 @@ const ListingPage = () => {
 
   const shareToTwitter = () => {
     window.open(
-      `https://twitter.com/intent/tweet?url=${encodeURIComponent(getShareUrl())}&text=${encodeShareText()}`,
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        getShareUrl()
+      )}&text=${encodeShareText()}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -343,7 +415,9 @@ const ListingPage = () => {
 
   const shareToWhatsApp = () => {
     window.open(
-      `https://api.whatsapp.com/send?text=${encodeShareText()}%20${encodeURIComponent(getShareUrl())}`,
+      `https://api.whatsapp.com/send?text=${encodeShareText()}%20${encodeURIComponent(
+        getShareUrl()
+      )}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -356,30 +430,36 @@ const ListingPage = () => {
   if (isCollectible) {
     const community = property.community || property.location || "N/A";
     const country = property.country || "N/A";
-    locationText = community !== "N/A" || country !== "N/A" ? `${community}, ${country}` : "Location unavailable";
+    locationText =
+      community !== "N/A" || country !== "N/A"
+        ? `${community}, ${country}`
+        : "Location unavailable";
   } else {
-    locationText = `${property.community || "N/A"}, ${property.propertyaddress || "N/A"}, ${property.subcommunity || "N/A"}`;
+    locationText = `${property.community || "N/A"}, ${
+      property.propertyaddress || "N/A"
+    }, ${property.subcommunity || "N/A"}`;
   }
 
   // Fallback for Luxury Collectibles if location is unavailable
-  const fallbackText = isCollectible && locationText === "Location unavailable"
-    ? property.category || property.description?.substring(0, 50) || "Luxury Item"
-    : null;
+  const fallbackText =
+    isCollectible && locationText === "Location unavailable"
+      ? property.category ||
+        property.description?.substring(0, 50) ||
+        "Luxury Item"
+      : null;
 
   return (
     <>
-      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 bg-white min-h-screen font-inter">
+      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-8 font-inter">
         {/* Header with Logo and Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
-          <img src={logo} className="w-[250px] md:w-[400px] mb-6 md:mb-0" alt="logo" />
-          <div className="flex gap-2 w-full md:w-auto items-center pl-4 md:pl-0">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSearchQuery(searchQuery);
-              }}
-              className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm"
-            >
+          <img
+            src={logo}
+            className="w-[250px] md:w-[400px] mb-6 md:mb-0"
+            alt="logo"
+          />
+          <div className="flex gap-2 w-full md:w-auto items-center ">
+            <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
                 placeholder="Country, Area, District..."
@@ -388,22 +468,15 @@ const ListingPage = () => {
                 onChange={(e) => handleSearchChange(e.target.value)}
                 aria-label="Search properties"
               />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => handleSearchChange("")}
-                  className="px-2 text-gray-500 hover:text-gray-700"
-                >
-                  <X size={16} />
-                </button>
-              )}
-              <button
-                type="submit"
-                className="bg-[#00603A] px-4 py-[10px] flex items-center justify-center border border-[#00603A] text-white hover:text-[#00603A] hover:bg-transparent transition"
-              >
-                <FaSearch className="font-thin" />
-              </button>
-            </form>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSearchQuery(searchQuery)}
+              className="bg-[#00603A] px-4 py-[10px] flex items-center justify-center border border-[#00603A] text-white hover:text-[#00603A] hover:bg-transparent transition"
+            >
+              <FaSearch className="font-thin hover:text-[#00603A]" />
+            </button>
+
             <button className="p-2" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? (
                 <X className="w-6 h-6 text-[#000000]" />
@@ -417,7 +490,7 @@ const ListingPage = () => {
         {/* Navigation Menu Popup */}
         {menuOpen && (
           <div ref={menuRef} className="mt-2 w-full">
-            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-20">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12 md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
@@ -438,19 +511,34 @@ const ListingPage = () => {
                 Follow The Mansion Market
               </p>
               <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
-                <a href="#" className="text-[#00603A] hover:text-gray-400 text-2xl">
+                <a
+                  href="#"
+                  className="text-[#00603A] hover:text-gray-400 text-2xl"
+                >
                   <FaFacebook />
                 </a>
-                <a href="#" className="text-[#00603A] hover:text-gray-400 text-2xl">
+                <a
+                  href="#"
+                  className="text-[#00603A] hover:text-gray-400 text-2xl"
+                >
                   <FaXTwitter />
                 </a>
-                <a href="#" className="text-[#00603A] hover:text-gray-400 text-2xl">
+                <a
+                  href="#"
+                  className="text-[#00603A] hover:text-gray-400 text-2xl"
+                >
                   <FaInstagram />
                 </a>
-                <a href="#" className="text-[#00603A] hover:text-gray-400 text-2xl">
+                <a
+                  href="#"
+                  className="text-[#00603A] hover:text-gray-400 text-2xl"
+                >
                   <FaLinkedin />
                 </a>
-                <a href="#" className="text-[#00603A] hover:text-gray-400 text-2xl">
+                <a
+                  href="#"
+                  className="text-[#00603A] hover:text-gray-400 text-2xl"
+                >
                   <FaYoutube />
                 </a>
               </div>
@@ -461,7 +549,7 @@ const ListingPage = () => {
         {/* Search Results */}
         {hasSearched && searchQuery.trim() && (
           <div className="w-full mx-auto mt-8">
-            <h2 className="text-2xl font-bold text-[#00603A] mb-6 font-playfair text-center">
+            <h2 className="text-2xl text-[#00603A] mb-6 font-inter text-center">
               {searchLoading ? "Searching..." : `Results for "${searchQuery}"`}
             </h2>
             {searchLoading ? (
@@ -479,11 +567,12 @@ const ListingPage = () => {
                   No properties found matching "{searchQuery}"
                 </p>
                 <p className="text-gray-500">
-                  Try different keywords like location, community, or property type
+                  Try different keywords like location, community, or property
+                  type
                 </p>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-6 justify-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {searchResults.slice(0, 6).map((mansion) => (
                   <MansionCard
                     key={mansion.reference}
@@ -494,7 +583,8 @@ const ListingPage = () => {
                 ))}
                 {searchResults.length > 6 && (
                   <p className="text-gray-600 text-center w-full">
-                    Showing 6 of {searchResults.length} results. Refine your search for more specific results.
+                    Showing 6 of {searchResults.length} results. Refine your
+                    search for more specific results.
                   </p>
                 )}
               </div>
@@ -504,24 +594,30 @@ const ListingPage = () => {
 
         {/* Property Title and Summary */}
         <div className="flex flex-col md:space-x-6 mt-4 py-6 md:mt-6 space-x-2 md:space-y-0 text-center">
-          <h3 className="text-3xl pt-8 font-playfair text-[#000000] mb-8">
+          <h3 className="text-3xl pt-6 font-playfair text-[#000000] text-center mb-8 bg-white">
             {property.title || "Untitled Property"}
           </h3>
-          <p className="text-base font-inter">
+          <p className="text-base text-center font-inter">
             {isCollectible
-              ? `${property.category || "Luxury Item"} | ${property.propertytype}`
-              : `${property.propertytype} | ${property.bedrooms || 0} beds | ${property.bathrooms || 0} baths | ${property.size || 0} sq. ft. | ${property.builtuparea || 0} sq. ft. plot`}
+              ? `${property.category || "Luxury Item"} | ${
+                  property.propertytype
+                }`
+              : `${property.propertytype} | ${property.bedrooms || 0} beds | ${
+                  property.bathrooms || 0
+                } baths | ${property.size || 0} sq. ft. | ${
+                  property.builtuparea || 0
+                } sq. ft. plot`}
           </p>
         </div>
 
         {/* Hero Image with ImageGallery */}
         <div className="relative w-full h-[280px] md:h-screen">
           <img
-            src={property.images?.[0]}
+            src={property.images?.[0] || FALLBACK_IMAGE}
             alt="Background"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <ImageGallery images={property.images} />
+          <ImageGallery images={property.images || images} />
         </div>
 
         {/* Main Content */}
@@ -529,17 +625,26 @@ const ListingPage = () => {
           {/* Left Section */}
           <div className="w-full lg:w-7/12">
             {isCollectible ? (
-              <div className="bg-white shadow-md p-6 mb-6">
-                <h1 className="text-3xl font-playfair text-[#00603A]">{property.title || "Untitled Collectible"}</h1>
+              <div className="bg-white mb-6">
+                <h1 className="text-3xl font-playfair text-[#00603A]">
+                  {property.title || "Untitled Collectible"}
+                </h1>
                 <p className="text-sm font-inter mt-4 text-gray-600">
                   {fallbackText || locationText}
                 </p>
-                <p className="text-3xl font-inter text-[#00603A] mt-4">AED {property.price || "N/A"}</p>
-                <p className="text-sm text-gray-500 mt-2 font-inter">PROPERTY REF: {property.reference || "N/A"}</p>
+                <p className="text-3xl font-inter text-[#00603A] mt-4">
+                  AED {property.price || "N/A"}
+                </p>
+                <p className="text-sm text-gray-500 mt-2 font-inter">
+                  PROPERTY REF: {property.reference || "N/A"}
+                </p>
                 <p className="text-base text-gray-700 mt-4 leading-7 font-inter w-full">
                   {showFullDescription
                     ? property.description
-                    : `${property.description?.substring(0, 300) || "No description available"}...`}
+                    : `${
+                        property.description?.substring(0, 300) ||
+                        "No description available"
+                      }...`}
                 </p>
                 <button
                   onClick={() => setShowFullDescription(!showFullDescription)}
@@ -554,7 +659,8 @@ const ListingPage = () => {
                   </h1>
                   <div className="mt-4">
                     <p className="text-sm text-gray-600 font-inter">
-                      <strong>Category:</strong> {property.category || "Luxury Item"}
+                      <strong>Category:</strong>{" "}
+                      {property.category || "Luxury Item"}
                     </p>
                     {property.subtitle && (
                       <p className="text-sm text-gray-600 font-inter mt-2">
@@ -568,9 +674,11 @@ const ListingPage = () => {
                 </div>
                 {property.videoLink && (
                   <div className="mt-8">
-                    <h2 className="text-2xl font-playfair text-[#00603A] mb-4">Video</h2>
+                    <h2 className="text-2xl font-playfair text-[#00603A] mb-4">
+                      Video
+                    </h2>
                     <iframe
-                      className="w-full h-64 border-0 rounded-lg"
+                      className="w-full h-64 border-0 rounded-none"
                       src={property.videoLink}
                       allowFullScreen
                       title="Property Video"
@@ -581,17 +689,24 @@ const ListingPage = () => {
             ) : (
               <>
                 <h1 className="text-3xl -mt-4 font-playfair text-[#00603A]">
-                  {property.title || "Untitled Property"}
+                  {property.subtitle || "Untitled Property"}
                 </h1>
                 <p className="text-sm font-inter mt-4 text-gray-600">
                   {locationText}
                 </p>
-                <p className="text-3xl font-inter text-[#00603A] mt-4">AED {property.price || "N/A"}</p>
-                <p className="text-sm text-gray-500 mt-2 font-inter">PROPERTY REF: {property.reference || "N/A"}</p>
+                <p className="text-3xl font-inter text-[#00603A] mt-4">
+                  AED {property.price || "N/A"}
+                </p>
+                <p className="text-sm text-gray-500 mt-2 font-inter">
+                  PROPERTY REF: {property.reference || "N/A"}
+                </p>
                 <p className="text-base text-gray-700 mt-4 leading-7 font-inter w-full md:w-10/12">
                   {showFullDescription
                     ? property.description
-                    : `${property.description?.substring(0, 300) || "No description available"}...`}
+                    : `${
+                        property.description?.substring(0, 300) ||
+                        "No description available"
+                      }...`}
                 </p>
                 <button
                   onClick={() => setShowFullDescription(!showFullDescription)}
@@ -610,7 +725,6 @@ const ListingPage = () => {
                       <ul key={colIndex} className="space-y-2 font-inter">
                         {column.map((amenity, index) => (
                           <li key={index} className="flex items-center">
-                            <Check className="h-5 w-5 text-[#00603A] mr-2 flex-shrink-0" />
                             <span>{amenity}</span>
                           </li>
                         ))}
@@ -626,7 +740,7 @@ const ListingPage = () => {
                   </h2>
                   <div className="w-full relative">
                     <iframe
-                      className="w-full h-64 border-0 rounded-lg"
+                      className="w-full h-64 border-0 rounded-none"
                       src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3623.496236789558!2d55.270782315318835!3d25.2048499838886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f4347f51ff62d%3A0x9e2df8d4d7e8f12a!2sDubai!5e0!3m2!1sen!2sae!4v1631234567890!5m2!1sen!2sae"
                       allowFullScreen
                       loading="lazy"
@@ -664,17 +778,19 @@ const ListingPage = () => {
                 </div>
               ) : (
                 <form className="mt-6" onSubmit={handleSubmit}>
-                  <div className="border border-[#00603A] p-6 mt-8 md:-mt-4 z-0 sticky top-20">
+                  <div className="border border-[#00603A] p-6 mt-4 md:-mt-8 z-0 sticky top-20">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-inter font-semibold text-gray-800">
-                          {property.agentname || property.agentName || "Agent Name"}
+                          {property.agentname ||
+                            property.agentName ||
+                            "Agent Name"}
                         </h3>
-                        <p className="text-sm text-gray-500 font-inter">
+                        <p className="text-sm text-gray-500 font-inter sevi">
                           {property.designation || "Designation"}
                         </p>
                       </div>
-                      {(property.agentimage || property.agentImage) ? (
+                      {property.agentimage || property.agentImage ? (
                         <img
                           src={property.agentimage || property.agentImage}
                           alt={property.agentname || property.agentName}
@@ -683,14 +799,20 @@ const ListingPage = () => {
                       ) : (
                         <div className="w-20 h-20 rounded-full bg-[#00603A] flex items-center justify-center mr-4">
                           <span className="text-white font-bold text-xl">
-                            {(property.agentname || property.agentName || "").charAt(0).toUpperCase()}
+                            {(property.agentname || property.agentName || "")
+                              .charAt(0)
+                              .toUpperCase()}
                           </span>
                         </div>
                       )}
                     </div>
                     <div className="flex gap-2 mt-4 border-b pb-4">
                       <a
-                        href={`https://wa.me/${property.whatsaapno || property.whatsappNo || "+971501234567"}`}
+                        href={`https://wa.me/${
+                          property.whatsaapno ||
+                          property.whatsappNo ||
+                          "+971501234567"
+                        }`}
                         className="text-[#00603A] font-inter flex items-center space-x-1"
                       >
                         <FaWhatsapp />
@@ -698,7 +820,9 @@ const ListingPage = () => {
                       </a>
                       <span className="text-[#f5f5f5]">|</span>
                       <a
-                        href={`tel:${property.callno || property.callNo || "+971501234567"}`}
+                        href={`tel:${
+                          property.callno || property.callNo || "+971501234567"
+                        }`}
                         className="text-[#00603A] font-inter flex items-center space-x-1"
                       >
                         <FaPhoneAlt />
@@ -734,11 +858,25 @@ const ListingPage = () => {
                       value={formData.email}
                       onChange={handleChange}
                     />
-                    <CustomPhoneInput
-                      value={formData.phone}
-                      onChange={handlePhoneChange}
-                      required
-                    />
+                    <div className="flex items-center mt-4">
+                      <PhoneInput
+                        country={"us"}
+                        containerStyle={{ width: "100%" }}
+                        inputStyle={{
+                          width: "100%",
+                          height: "50px",
+                          borderRadius: "0",
+                        }}
+                        className="border-none border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
+                        placeholder="Phone number"
+                        aria-label="Phone number"
+                        value={phonenumber}
+                        onChange={handleChangenumber}
+                        inputProps={{
+                          required: true,
+                        }}
+                      />
+                    </div>
                     <textarea
                       name="message"
                       placeholder="I'd like to have more information about this property..."
@@ -763,24 +901,36 @@ const ListingPage = () => {
 
         {/* Similar Listings */}
         <div className="w-full mx-auto mt-8">
-          <h2 className="text-3xl font-playfair text-[#00603A] mb-6">
-            Similar {isCollectible ? "Collectibles" : "Properties"} You May Like
+          <h2 className="text-3xl text-center mb-12 mt-8 font-playfair text-[#00603A]">
+            Similar {isCollectible ? "Collectibles" : "Properties"} Listing
           </h2>
           {similarListings.length === 0 ? (
             <p className="text-gray-600 text-center w-full text-lg">
               No similar {isCollectible ? "collectibles" : "properties"} found.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-6 p-6 justify-center">
-              {similarListings.map((mansion) => (
-                <MansionCard
-                  key={mansion.reference}
-                  mansion={mansion}
-                  searchQuery={searchQuery}
-                  onShare={() => handleShareClick(mansion)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {similarListings.slice(0, visibleCount).map((mansion) => (
+                  <MansionCard
+                    key={mansion.reference}
+                    mansion={mansion}
+                    searchQuery={searchQuery}
+                    onShare={() => handleShareClick(mansion)}
+                  />
+                ))}
+              </div>
+              {visibleCount < similarListings.length && (
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={handleViewMore}
+                    className="px-3 py-2 border border-[#00603A] rounded-none text-[#00603A] bg-white hover:bg-[#00603A] hover:text-white transition text-sm font-medium"
+                  >
+                    View More
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -797,7 +947,11 @@ const ListingPage = () => {
                 </button>
                 <div className="relative w-full h-64">
                   <img
-                    src={selectedMansion.images?.[0] || selectedMansion.image || FALLBACK_IMAGE}
+                    src={
+                      selectedMansion.images?.[0] ||
+                      selectedMansion.image ||
+                      FALLBACK_IMAGE
+                    }
                     alt={selectedMansion.title}
                     className="w-full h-full object-cover mt-8"
                   />
@@ -811,7 +965,9 @@ const ListingPage = () => {
               </div>
               <div className="p-5 text-left">
                 <h3 className="text-lg font-semibold">Share</h3>
-                <p className="text-gray-600 mt-2">{selectedMansion.subtitle || selectedMansion.subTitle}</p>
+                <p className="text-gray-600 mt-2">
+                  {selectedMansion.subtitle || selectedMansion.subTitle}
+                </p>
                 <div className="flex justify-left space-x-4 mt-4">
                   <button
                     onClick={shareToFacebook}

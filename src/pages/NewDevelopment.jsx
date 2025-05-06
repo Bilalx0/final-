@@ -94,7 +94,7 @@ const NewDevelopment = () => {
         {/* Navigation Popup (Works on all screen sizes) */}
         {menuOpen && (
           <div className="mt-2">
-            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-20">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
@@ -179,42 +179,49 @@ const NewDevelopment = () => {
           </p>
         ) : filteredDevelopments.length === 0 ? (
           <p className="text-gray-600 text-center w-full text-lg py-8">
-            No developments found matching your search. Please try a different title.
+            No developments found matching your search. Please try a different
+            title.
           </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {filteredDevelopments.slice(0, visibleDevelopments).map((development) => (
-              <a
-                key={development._id}
-                href={development.link}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={development.image}
-                    alt={development.title}
-                    className="w-full h-96 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 w-full p-3 text-white">
-                    <h3 className="text-lg font-semibold">{development.title}</h3>
+            {filteredDevelopments
+              .slice(0, visibleDevelopments)
+              .map((development) => (
+                <a
+                  key={development._id}
+                  href={development.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={development.image}
+                      alt={development.title}
+                      className="w-full h-96 object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 w-full p-3 text-white">
+                      <h3 className="text-lg font-semibold">
+                        {development.title}
+                      </h3>
+                    </div>
                   </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
           </div>
         )}
-        {!loading && !error && visibleDevelopments < filteredDevelopments.length && (
-          <div className="flex justify-center mt-20 mb-6">
-            <button
-              onClick={handleLoadMore}
-              className="px-4 py-2 w-60 font-inter text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
-            >
-              See More
-            </button>
-          </div>
-        )}
+        {!loading &&
+          !error &&
+          visibleDevelopments < filteredDevelopments.length && (
+            <div className="flex justify-center mt-20 mb-6">
+              <button
+                onClick={handleLoadMore}
+                className="px-4 py-2 w-60 font-inter text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
+              >
+                See More
+              </button>
+            </div>
+          )}
       </div>
       <Footer />
     </>

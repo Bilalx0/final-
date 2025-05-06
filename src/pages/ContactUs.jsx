@@ -6,9 +6,15 @@ import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import { Menu, X } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6"; // Impor
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const ContactUs = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [phonenumber, setphonenumber] = useState("");
+  const handleChangenumber = (value) => {
+    setphonenumber(value);
+  };
 
   return (
     <>
@@ -47,15 +53,14 @@ const ContactUs = () => {
         {/* Navigation Popup (Works on all screen sizes) */}
         {menuOpen && (
           <div className="">
-            <div className="bg-white shadow-md  p-4  z-50 absolute w-full  right-0  px-20">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
-                { name: "New Developments", href: "/newdevelopment" },
-                // { name: "Development", href: "/listingpage" },
+                { name: "Developments", href: "/newdevelopment" },
                 { name: "Magazine", href: "/magazine" },
-                // { name: "Luxe Collectibles", href: "/listedcollectibles" },
+                { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
@@ -143,26 +148,23 @@ const ContactUs = () => {
                   placeholder="E-mail address"
                   aria-label="E-mail address"
                 />
-                <div className="flex space-x-2 items-center">
-                  <select
-                    className="p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A] flex-shrink-0"
-                    aria-label="Country code"
-                  >
-                    <option value="+1" data-flag="us">
-                      🇺🇸 +1
-                    </option>
-                    <option value="+44" data-flag="gb">
-                      🇬🇧 +44
-                    </option>
-                    <option value="+91" data-flag="in">
-                      🇮🇳 +91
-                    </option>
-                  </select>
-                  <input
-                    type="text"
-                    className="flex-1 p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
+                <div className="flex items-center mt-4">
+                  <PhoneInput
+                    country={"us"}
+                    containerStyle={{ width: "100%" }}
+                    inputStyle={{
+                      width: "100%",
+                      height: "50px",
+                      borderRadius: "0",
+                    }}
+                    className="border-none border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
                     placeholder="Phone number"
                     aria-label="Phone number"
+                    value={phonenumber}
+                    onChange={handleChangenumber}
+                    inputProps={{
+                      required: true,
+                    }}
                   />
                 </div>
                 <select
@@ -174,6 +176,9 @@ const ContactUs = () => {
                   </option>
                   <option value="inquiry">General Inquiry</option>
                   <option value="support">Support</option>
+                  <option value="listaproperty">
+                    I'd like to list a property
+                  </option>
                 </select>
                 <select
                   className="w-full p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"

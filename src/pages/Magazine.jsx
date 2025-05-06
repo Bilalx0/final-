@@ -12,7 +12,7 @@ import { Menu, X } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"; // Impor
+import { FaXTwitter } from "react-icons/fa6";
 
 const Magazine = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -20,6 +20,7 @@ const Magazine = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [visibleArticles, setVisibleArticles] = useState(4);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const categories = [
@@ -94,10 +95,9 @@ const Magazine = () => {
     const fetchMagazines = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/api/magazineDetails`);
-        // Ensure all fetched articles have a category; assign a default if missing
         const sanitizedMagazines = response.data.map((article) => ({
           ...article,
-          category: article.category || "lifestyle", // Default to 'lifestyle' if undefined
+          category: article.category || "lifestyle",
         }));
         setFetchedMagazines(sanitizedMagazines);
         setLoading(false);
@@ -114,6 +114,19 @@ const Magazine = () => {
 
   const articlesToDisplay =
     fetchedMagazines.length > 0 ? fetchedMagazines : dummyArticles;
+
+  // Filter articles based on search query with multi-word support
+  const filteredArticles = articlesToDisplay.filter((article) => {
+    if (!searchQuery.trim()) return true; // Show all if query is empty
+    const queryWords = searchQuery.toLowerCase().split(/\s+/);
+    const fields = [
+      article.title?.toLowerCase() || "",
+      article.subtitle?.toLowerCase() || "",
+      article.description?.toLowerCase() || "",
+      article.category?.toLowerCase() || "",
+    ].join(" ");
+    return queryWords.every((word) => fields.includes(word));
+  });
 
   const loadMore = () => {
     setVisibleArticles((prev) => prev + 4);
@@ -134,6 +147,8 @@ const Magazine = () => {
                 type="text"
                 placeholder="Country, Area, District..."
                 className="w-full px-4 py-2 text-[#000000] text-sm bg-[#f5f5f5] focus:outline-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <button className="bg-[#00603A] px-4 py-[10px] flex items-center justify-center border border-[#00603A] text-white hover:text-[#00603A] hover:bg-transparent transition">
@@ -150,31 +165,29 @@ const Magazine = () => {
         </div>
 
         {menuOpen && (
-          <div className="mt-2  ">
-            <div className="bg-white shadow-md  p-4  z-50 absolute w-full  right-0  px-20">
+          <div className="mt-2">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
                 { name: "New Developments", href: "/listingpage" },
-                // { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
-                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A]  text-lg"
+                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A] text-lg"
                 >
                   {link.name}
                 </a>
               ))}
-
               <p
-                className="flex justify-start border-t border-[#000000]  space-x-0 mt-3 pt-4 "
+                className="flex justify-start border-t border-[#000000] space-x-0 mt-3 pt-4"
                 style={{ textTransform: "capitalize" }}
               >
                 FOLLOW THE MANSION MARKET
               </p>
-              <div className="flex justify-start  mt-4 py-4 space-x-6 mb-2 ">
+              <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
                 <a
                   href="#"
                   className="text-[#00603A] hover:text-gray-400 text-2xl"
@@ -228,8 +241,72 @@ const Magazine = () => {
       </div>
       <div className="border-b border-[#00603A] mb-8"></div>
 
+      {/* Search Results Section */}
+      {searchQuery.trim() && (
+        <section className="px-4 py-10 md:px-10 lg:px-20">
+          <h2 className="text-3xl mb-8 text-center md:text-start font-playfair text-[#00603A]">
+            Search Results
+          </h2>
+          {filteredArticles.length > 0 ? (
+            <div className="grid md:grid-cols-4 grid-cols-1 gap-6">
+              {filteredArticles
+                .filter((article) => article.category)
+                .slice(0, visibleArticles)
+                .map((article, index) => (
+                  <div
+                    key={index}
+                    className="cursor-pointer"
+                    onClick={() => handleCardClick(article._id)}
+                  >
+                    <img
+                      src={
+                        article.mainImage
+                          ? `${article.mainImage}`
+                          : article.image || newImage
+                      }
+                      alt={article.title}
+                      className="w-full h-60 object-cover"
+                      onError={(e) => (e.target.src = newImage)}
+                    />
+                    <h3 className="text-lg mt-2 font-playfair text-center md:text-start">
+                      {article.title}
+                    </h3>
+                    <p className="mt-2 min-h-24 font-inter text-center md:text-start">
+                      {article.subtitle || article.description}
+                    </p>
+                    <p className="text-gray-600 font-inter text-center md:text-start">
+                      {article.category || "Lifestyle"}
+                    </p>
+                    <p className="text-gray-600 mt-2 min-h-24 font-playfair text-center md:text-start">
+                      {article.time
+                        ? new Date(article.time).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : article.date}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No articles match your search.</p>
+          )}
+          {visibleArticles <
+            filteredArticles.filter((article) => article.category).length && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={loadMore}
+                className="font-inter px-20 my-8 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
+              >
+                Load More
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
       {categories.map((cat, index) => {
-        // Filter articles, ensuring category exists
         const categoryArticles = articlesToDisplay.filter(
           (article) =>
             article.category &&
@@ -309,7 +386,7 @@ const Magazine = () => {
                         <span className="text-sm text-gray-500 uppercase font-inter">
                           {article.category || cat.category}
                         </span>
-                        <h4 className="text-lg mt-2  font-playfair">
+                        <h4 className="text-lg mt-2 font-playfair">
                           {article.title}
                         </h4>
                         <p className="text-gray-700 mt-2 font-inter">
@@ -350,8 +427,8 @@ const Magazine = () => {
           ) : (
             <>
               <div className="grid md:grid-cols-4 grid-cols-1 gap-6 px-4 md:px-20">
-                {articlesToDisplay
-                  .filter((article) => article.category) // Exclude articles without category
+                {filteredArticles
+                  .filter((article) => article.category)
                   .slice(0, visibleArticles)
                   .map((article, index) => (
                     <div
@@ -369,7 +446,7 @@ const Magazine = () => {
                         className="w-full h-60 object-cover"
                         onError={(e) => (e.target.src = newImage)}
                       />
-                      <h3 className="text-lg mt-2  font-playfair text-center md:text-start">
+                      <h3 className="text-lg mt-2 font-playfair text-center md:text-start">
                         {article.title}
                       </h3>
                       <p className="mt-2 min-h-24 font-inter text-center md:text-start">
@@ -392,8 +469,7 @@ const Magazine = () => {
               </div>
 
               {visibleArticles <
-                articlesToDisplay.filter((article) => article.category)
-                  .length && (
+                filteredArticles.filter((article) => article.category).length && (
                 <button
                   onClick={loadMore}
                   className="font-inter px-20 my-8 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"

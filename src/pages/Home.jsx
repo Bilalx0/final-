@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import FeaturedListings from "../components/FeaturedListings";
-import LifestyleChoices from "../components/LifestyleChoices";
 import MagazineCollection from "../components/MagazineCollection";
 import Footer from "../components/Footer";
 
@@ -21,13 +20,12 @@ const Home = () => {
   return (
     <div>
       <Navbar />
-      <Hero 
+      <Hero
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
         onSearchSubmit={handleSearchSubmit}
       />
       <FeaturedListings searchQuery={searchQuery} />
-      <LifestyleChoices />
       <MagazineCollection />
       <Footer />
     </div>
