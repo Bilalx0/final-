@@ -19,19 +19,6 @@ const IconicForm = () => {
       ? "https://backend-5kh4.onrender.com"
       : "http://localhost:5001";
 
-  // Fetch existing data (if any, e.g., for editing)
-  useEffect(() => {
-    // Uncomment and adjust if you want to fetch existing data
-    // const fetchData = async () => {
-    //   try {
-    //     const response = await axios.get("http://localhost:5001/api/iconic");
-    //     setFormData(response.data);
-    //   } catch (err) {
-    //     setError("Failed to load data.");
-    //   }
-    // };
-    // fetchData();
-  }, []);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;

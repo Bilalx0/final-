@@ -1,13 +1,71 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch } from "react-icons/fa";
 import Footer from "../components/Footer";
 import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import { Menu, X } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"; // Impor
+import { FaXTwitter } from "react-icons/fa6";
+import axios from "axios";
+import MansionCard from "../components/Card";
 
 const PrivacyPolicy = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const searchTimeoutRef = useRef(null);
+
+  const BASE_URL =
+    process.env.NODE_ENV === "production"
+      ? "https://backend-5kh4.onrender.com"
+      : "http://localhost:5001";
+
+  // Handle search with debounce
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setHasSearched(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/search`, {
+          params: { query: searchQuery },
+          timeout: 10000,
+        });
+        setSearchResults(Array.isArray(response.data) ? response.data : []);
+        setHasSearched(true);
+        setError(null);
+      } catch (err) {
+        console.error("Search error:", err);
+        setError("Search failed. Please try again.");
+        setSearchResults([]);
+        setHasSearched(true);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
 
   return (
     <>
@@ -22,8 +80,10 @@ const PrivacyPolicy = () => {
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
-                placeholder="Country, Area, District..."
+                placeholder="Search properties or services..."
                 className="w-full px-4 py-2 text-[#000000] text-sm bg-[#f5f5f5] focus:outline-none"
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
             </div>
 
@@ -32,7 +92,7 @@ const PrivacyPolicy = () => {
               <FaSearch className="font-thin hover:text-[#00603A]" />
             </button>
 
-            {/* Menu Icon (Visible on all screen sizes) */}
+            {/* Menu Icon */}
             <button className="p-2" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? (
                 <X className="w-6 h-6 text-[#000000]" />
@@ -43,35 +103,34 @@ const PrivacyPolicy = () => {
           </div>
         </div>
 
-        {/* Navigation Popup (Works on all screen sizes) */}
+        {/* Navigation Popup */}
         {menuOpen && (
-          <div className="mt-2  ">
-            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
+          <div className="mt-2">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12 md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
                 { name: "Developments", href: "/newdevelopment" },
-                // { name: "Development", href: "/listingpage" },
                 { name: "Magazine", href: "/magazine" },
                 { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
-                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A]  text-lg"
+                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A] text-lg"
                 >
                   {link.name}
                 </a>
               ))}
 
               <p
-                className="flex justify-start border-t border-[#000000]  space-x-0 mt-3 pt-4 "
+                className="flex justify-start border-t border-[#000000] space-x-0 mt-3 pt-4"
                 style={{ textTransform: "capitalize" }}
               >
                 FOLLOW THE MANSION MARKET
               </p>
-              <div className="flex justify-start  mt-4 py-4 space-x-6 mb-2 ">
+              <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
                 <a
                   href="#"
                   className="text-[#00603A] hover:text-gray-400 text-2xl"
@@ -112,7 +171,36 @@ const PrivacyPolicy = () => {
           </div>
         )}
 
-        <div className="max-w-4xl  pt-4 md:pt-12  px-6 md:px-8 lg:px-8 font-inter leading-[2]">
+        {/* Search Results Section */}
+        {hasSearched && searchQuery.trim() && (
+          <section className="w-full mt-8 px-4 md:px-10 lg:px-20 py-12">
+            <h2 className="text-3xl font-playfair text-[#00603A] text-center mb-8">
+              {loading ? "Searching..." : `Results for "${searchQuery}"`}
+            </h2>
+            {loading ? (
+              <p className="text-center text-gray-600">Searching properties...</p>
+            ) : error ? (
+              <p className="text-center text-red-600">{error}</p>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">
+                  No properties found matching all terms: "{searchQuery}"
+                </p>
+                <p className="text-gray-500">
+                  Try different combinations of location, community, or property type
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchResults.map((mansion) => (
+                  <MansionCard key={mansion.reference} mansion={mansion} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        <div className="max-w-4xl pt-4 md:pt-12 px-6 md:px-8 lg:px-8 font-inter leading-[2]">
           <h2 className="text-xl font-bold mb-4 text-black font-inter">
             Privacy Policy
           </h2>
@@ -186,7 +274,7 @@ const PrivacyPolicy = () => {
           <p>
             We implement a variety of security measures to maintain the safety
             of your personal information. This includes using encryption,
-            firewalls, and secure server hosting. However, no method of
+            firewalls, and secure server hosting. However, <b>n</b>o method of
             transmission over the Internet or method of electronic storage is
             100% secure.
           </p>

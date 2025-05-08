@@ -38,98 +38,6 @@ import Footer from "../components/Footer";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 
-const ImageGallery = ({ images, property }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Disable body scrolling when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"; // Prevent background scrolling
-    } else {
-      document.body.style.overflow = "auto"; // Restore scrolling
-    }
-  }, [isOpen]);
-
-  return (
-    <div className="w-full absolute bottom-4 left-4">
-      {/* Show All Photos Button */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="absolute bottom-8 right-16 bg-white bg-opacity-75 hover:text-white text-black px-8 py-2 border border-[#00603A] hover:bg-[#00603A] transition-all duration-300"
-      >
-        Show All Photos
-      </button>
-
-      {/* Popup Modal (Single Scrollable Container) */}
-      {isOpen && (
-        <div className="fixed inset-0 flex justify-center items-start z-50  bg-white overflow-y-auto">
-          {/* Fixed Close Button */}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="fixed top-4 right-8 text-[#000000] hover:text-[#00603A] px-3 py-1 rounded-md text-xl z-50"
-          >
-            ✕
-          </button>
-
-          {/* Modal Content (Moved Down) */}
-          <div className="relative p-5 w-full mt-16 mb-8  ">
-            {/* Images and Text Layout */}
-            <div className="flex flex-col md:flex-row gap-4 md:h-auto">
-              {/* 🟢 Images Container (First on mobile, second on desktop) */}
-              <div className="flex flex-col w-full md:w-[75%] order-1 md:order-2">
-                {images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Image ${index + 1}`}
-                    className="w-full h-auto mb-4"
-                  />
-                ))}
-              </div>
-
-              {/* 🟢 Text Container (Second on mobile, first on desktop) */}
-              <div className="w-full md:w-[25%] p-4 md:sticky md:top-4 self-start order-2 md:order-1">
-                <div className="flex flex-col  mt-4 py-6 md:mt-6  md:space-y-0">
-                  <h3 className="text-3xl font-playfair break-words text-[#000000] mb-8 bg-white">
-                  {property.title || "Untitled Property"}
-                  </h3>
-
-                  <p className="text-base break-words font-inter pt-8 border-t border-[#00603A]">
-                    {property.propertytype || "Property Type"} | {property.bedrooms || "Bedrooms"} beds | {property.bathrooms || "Bathrooms"} baths | {property.area || "Area"} sq. ft. | {property.plotarea || "Plot Area"} sq. ft. plot
-                  </p>
-                </div>
-
-                <div className="flex gap-2 mt-4 border-b pb-4">
-                      <a
-                        href={`https://wa.me/${
-                          property.whatsaapno ||
-                          property.whatsappNo ||
-                          "+971501234567"
-                        }`}
-                        className="text-[#00603A] font-inter flex items-center space-x-1"
-                      >
-                        <FaWhatsapp />
-                        <span>WhatsApp</span>
-                      </a>
-                      <span className="text-[#f5f5f5]">|</span>
-                      <a
-                        href={`tel:${
-                          property.callno || property.callNo || "+971501234567"
-                        }`}
-                        className="text-[#00603A] font-inter flex items-center space-x-1"
-                      >
-                        <FaPhoneAlt />
-                        <span>Call</span>
-                      </a>
-                    </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 
 const ListingPage = () => {
@@ -166,6 +74,16 @@ const ListingPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const searchTimeoutRef = useRef(null);
   const menuRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Disable body scrolling when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
+    } else {
+      document.body.style.overflow = "auto"; // Restore scrolling
+    }
+  }, [isOpen]);
 
   const images = [newImage1, newImage2, newImage3];
   const BASE_URL =
@@ -617,7 +535,12 @@ const ListingPage = () => {
             alt="Background"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <ImageGallery images={property.images || images} />
+          <button
+        onClick={() => setIsOpen(true)}
+        className="absolute bottom-8 right-16 bg-white bg-opacity-75 hover:text-white text-black px-8 py-2 border border-[#00603A] hover:bg-[#00603A] transition-all duration-300"
+      >
+        Show All Photos
+      </button>
         </div>
 
         {/* Main Content */}
@@ -1015,6 +938,72 @@ const ListingPage = () => {
             <ArrowUp size={20} />
           </button>
         )}
+        {isOpen && (
+        <div className="fixed inset-0 flex justify-center items-start z-50  bg-white overflow-y-auto">
+          {/* Fixed Close Button */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="fixed top-4 right-8 text-[#000000] hover:text-[#00603A] px-3 py-1 rounded-md text-xl z-50"
+          >
+            ✕
+          </button>
+
+          {/* Modal Content (Moved Down) */}
+          <div className="relative p-5 w-full mt-16 mb-8  ">
+            {/* Images and Text Layout */}
+            <div className="flex flex-col md:flex-row gap-4 md:h-auto">
+              {/* 🟢 Images Container (First on mobile, second on desktop) */}
+              <div className="flex flex-col w-full md:w-[75%] order-1 md:order-2">
+                {property.images.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`Image ${index + 1}`}
+                    className="w-full h-auto mb-4"
+                  />
+                ))}
+              </div>
+
+              {/* 🟢 Text Container (Second on mobile, first on desktop) */}
+              <div className="w-full md:w-[25%] p-4 md:sticky md:top-4 self-start order-2 md:order-1">
+                <div className="flex flex-col  mt-4 py-6 md:mt-6  md:space-y-0">
+                  <h3 className="text-3xl font-playfair break-words text-[#000000] mb-8 bg-white">
+                  {property.title || "Untitled Property"}
+                  </h3>
+
+                  <p className="text-base break-words font-inter pt-8 border-t border-[#00603A]">
+                    {property.propertytype || "Property Type"} | {property.bedrooms || "Bedrooms"} beds | {property.bathrooms || "Bathrooms"} baths | {property.area || "Area"} sq. ft. | {property.plotarea || "Plot Area"} sq. ft. plot
+                  </p>
+                </div>
+
+                <div className="flex gap-2 mt-4 border-b pb-4">
+                      <a
+                        href={`https://wa.me/${
+                          property.whatsaapno ||
+                          property.whatsappNo ||
+                          "+971501234567"
+                        }`}
+                        className="text-[#00603A] font-inter flex items-center space-x-1"
+                      >
+                        <FaWhatsapp />
+                        <span>WhatsApp</span>
+                      </a>
+                      <span className="text-[#f5f5f5]">|</span>
+                      <a
+                        href={`tel:${
+                          property.callno || property.callNo || "+971501234567"
+                        }`}
+                        className="text-[#00603A] font-inter flex items-center space-x-1"
+                      >
+                        <FaPhoneAlt />
+                        <span>Call</span>
+                      </a>
+                    </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
       <Footer />
     </>

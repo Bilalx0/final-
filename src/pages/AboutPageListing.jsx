@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import MansionCard from "../components/Card";
 
-const AboutPageListing = ({ searchQuery }) => {
+const AboutPageListing = () => {
   // State for all data
   const [featuredProperties, setFeaturedProperties] = useState([]);
   const [mansionFeatured, setMansionFeatured] = useState([]);
@@ -131,50 +131,6 @@ const AboutPageListing = ({ searchQuery }) => {
     fetchData();
   }, []);
 
-  // Handle search with debounce for multi-word queries
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setHasSearched(false);
-      setErrors((prev) => ({ ...prev, search: null }));
-      return;
-    }
-
-    setLoading((prev) => ({ ...prev, search: true }));
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/api/search`, {
-          params: { query: searchQuery },
-          timeout: 10000,
-        });
-        setSearchResults(response.data);
-        setHasSearched(true);
-        setErrors((prev) => ({ ...prev, search: null }));
-      } catch (err) {
-        console.error("Search error:", err);
-        setErrors((prev) => ({
-          ...prev,
-          search: "Search failed. Please try again.",
-        }));
-        setSearchResults([]);
-        setHasSearched(true);
-      } finally {
-        setLoading((prev) => ({ ...prev, search: false }));
-      }
-    }, 500);
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-    };
-  }, [searchQuery]);
-
   // Render helper function for featured sections
   const renderFeaturedSection = (
     title,
@@ -225,43 +181,6 @@ const AboutPageListing = ({ searchQuery }) => {
 
   return (
     <>
-      {/* Search Results Section */}
-      {hasSearched && searchQuery.trim() && (
-        <div id="search-results" className="px-4 md:px-10 lg:px-20 py-12">
-          <h2 className="text-3xl font-playfair text-[#00603A] text-center mb-8">
-            {loading.search ? "Searching..." : `Results for "${searchQuery}"`}
-          </h2>
-
-          {loading.search ? (
-            <div className="text-center">
-              <p className="text-gray-600">Searching properties...</p>
-            </div>
-          ) : errors.search ? (
-            <div className="text-center">
-              <p className="text-red-600 mb-4">{errors.search}</p>
-            </div>
-          ) : searchResults.length === 0 ? (
-            <div className="text-center">
-              <p className="text-gray-600 mb-4">
-                No properties found matching all terms: "{searchQuery}"
-              </p>
-              <p className="text-gray-500">
-                Try different combinations of location, community, or property
-                type
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {searchResults.map((mansion) => (
-                <MansionCard key={mansion.reference} mansion={mansion} />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Regular Featured Sections - now written out individually */}
-      {(!hasSearched || !searchQuery.trim()) && (
         <>
           {/* Mansion Featured Section */}
           <div className="px-4 md:px-8 lg:px-20 py-20 border-b border-[#00603A]">
@@ -339,7 +258,6 @@ const AboutPageListing = ({ searchQuery }) => {
             )}
           </div>
         </>
-      )}
     </>
   );
 };

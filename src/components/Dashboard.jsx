@@ -16,7 +16,7 @@ const Dashboard = ({
   onPageChange = () => {},
 }) => {
   const [inquiries, setInquiries] = useState([]);
-  const [users, setUsers] = useState([]); // Added state for users
+  const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [filterCategory, setFilterCategory] = useState("All");
@@ -33,7 +33,6 @@ const Dashboard = ({
       ? "https://backend-5kh4.onrender.com"
       : "http://localhost:5001";
 
-  // Format date consistently across tables
   const formatDate = (date) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleString("en-GB", {
@@ -45,12 +44,10 @@ const Dashboard = ({
     });
   };
 
-  // Handle row click
   const handleRowClick = (item) => {
     console.log("Selected item:", item);
   };
 
-  // Generic delete handler
   const handleDelete = async (id, type, endpoint) => {
     if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
 
@@ -84,7 +81,6 @@ const Dashboard = ({
     }
   };
 
-  // Handle edit click
   const handleEditClick = (e, id, type) => {
     e.stopPropagation();
     if (type === "Magazine Article") {
@@ -93,18 +89,20 @@ const Dashboard = ({
       navigate(`/mansionform/${id}`);
     } else if (type === "Development") {
       navigate(`/newdevelopmentform/${id}`);
-    } 
+    } else if (type === "User") {
+      navigate(`/userform/${id}`);
+    }
   };
 
-  // Handle add click
   const handleAddClick = (type) => {
     console.log(`Add new ${type}`);
     if (type === "development") {
       navigate("/developmentform");
-    } 
+    } else if (type === "user") {
+      navigate("/userform");
+    }
   };
 
-  // Filtering logic for inquiries (leads)
   const filteredInquiries = inquiries.filter((inquiry) => {
     const matchesSearch =
       inquiry.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,12 +115,10 @@ const Dashboard = ({
     return matchesSearch && matchesDate;
   });
 
-  // Pagination for inquiries
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentPosts = filteredInquiries.slice(startIndex, startIndex + itemsPerPage);
   const calculatedTotalPages = Math.ceil(filteredInquiries.length / itemsPerPage);
 
-  // Filtering logic for properties (mansions, penthouses)
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
       viewType === "property"
@@ -137,7 +133,6 @@ const Dashboard = ({
     return matchesSearch && (viewType === "property" ? matchesCategory && matchesDate : matchesDate);
   });
 
-  // Filtering logic for luxury collectibles
   const filteredLuxuryCollectibles = luxuryCollectibles.filter((collectible) => {
     const matchesSearch =
       collectible.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -148,7 +143,6 @@ const Dashboard = ({
     return matchesSearch && matchesDate;
   });
 
-  // Filtering logic for magazine details
   const filteredMagazineDetails = magazineDetails.filter((magazine) => {
     const matchesSearch =
       magazine.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -159,7 +153,6 @@ const Dashboard = ({
     return matchesSearch && matchesDate;
   });
 
-  // Filtering logic for developments
   const filteredDevelopments = developments.filter((development) => {
     const matchesSearch =
       development.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -170,7 +163,6 @@ const Dashboard = ({
     return matchesSearch && matchesDate;
   });
 
-  // Filtering logic for users
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -179,7 +171,6 @@ const Dashboard = ({
     return matchesSearch;
   });
 
-  // Fetch inquiries for leads view
   useEffect(() => {
     const fetchInquiries = async () => {
       try {
@@ -196,7 +187,6 @@ const Dashboard = ({
     }
   }, [viewType, BASE_URL]);
 
-  // Fetch newsletter for property view
   useEffect(() => {
     const fetchNewsletter = async () => {
       setLoading(true);
@@ -223,7 +213,6 @@ const Dashboard = ({
     }
   }, [viewType, BASE_URL]);
 
-  // Fetch properties for mansions, penthouses
   useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
@@ -263,7 +252,6 @@ const Dashboard = ({
     }
   }, [viewType, BASE_URL]);
 
-  // Fetch luxury collectibles
   useEffect(() => {
     const fetchLuxuryCollectibles = async () => {
       setLoading(true);
@@ -296,7 +284,6 @@ const Dashboard = ({
     }
   }, [viewType, BASE_URL]);
 
-  // Fetch magazine details
   useEffect(() => {
     const fetchMagazineDetails = async () => {
       setLoading(true);
@@ -326,7 +313,6 @@ const Dashboard = ({
     }
   }, [viewType, BASE_URL]);
 
-  // Fetch developments for newdevelopments view
   useEffect(() => {
     const fetchDevelopments = async () => {
       setLoading(true);
@@ -347,7 +333,6 @@ const Dashboard = ({
     }
   }, [viewType, BASE_URL]);
 
-  // Fetch users for userdata view
   useEffect(() => {
     const fetchUsers = async () => {
       setLoading(true);
@@ -455,7 +440,10 @@ const Dashboard = ({
                       <td className="py-2 px-2 border">{user.role}</td>
                       <td className="py-2 px-2 border">
                         <div className="flex gap-2 justify-center">
-                          
+                          <FaEdit
+                            className="text-green-600 cursor-pointer"
+                            onClick={(e) => handleEditClick(e, user._id, "User")}
+                          />
                           <FaTrash
                             className="text-red-600 cursor-pointer"
                             onClick={() =>
@@ -878,8 +866,7 @@ const Dashboard = ({
                         No penthouse listings available
                       </td>
                     </tr>
-                  ) : (
-                    filteredProperties.map((property, index) => (
+                  ) : (filteredProperties.map((property, index) => (
                       <tr
                         key={property.id}
                         className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
@@ -1113,7 +1100,7 @@ const Dashboard = ({
                         className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
                         onClick={() => handleRowClick(magazine)}
                       >
-                        <td className="py-2 px-2 border">{index + 1}</td>
+                        <td className="py-2 px-2 border">{index +1}</td>
                         <td className="py-2 px-2 border">{magazine.title}</td>
                         <td className="py-2 px-2 border">{magazine.author}</td>
                         <td className="py-2 px-2 border">

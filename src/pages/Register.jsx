@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch } from "react-icons/fa";
 import newImage from "../assests/Modern Minimalist Interior.jpeg";
 import img1 from "../assests/Serenity Waters Luxury Villa 1.png";
@@ -7,9 +7,11 @@ import Footer from "../components/Footer";
 import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import { Menu, X } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"; // Impor
+import { FaXTwitter } from "react-icons/fa6";
 import AboutPageListing from "./AboutPageListing.jsx";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import MansionCard from "../components/Card";
 
 const Register = () => {
   const listings1 = [
@@ -17,10 +19,10 @@ const Register = () => {
       id: 1,
       price: "13 AED",
       location: "Villa in Marbella, Andalusia, Spain",
-      imageUrl: img1, // Replace with actual image URL
+      imageUrl: img1,
       bedrooms: 5,
       bathrooms: 4,
-      size: "6,500", // sqft
+      size: "6,500",
       name: "Sienna Views",
     },
     {
@@ -54,17 +56,69 @@ const Register = () => {
       name: "mansion",
     },
   ];
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const searchTimeoutRef = useRef(null);
 
-  const handleSearchChange = (query) => {
-    setSearchQuery(query);
+  const BASE_URL =
+    process.env.NODE_ENV === "production"
+      ? "https://backend-5kh4.onrender.com"
+      : "http://localhost:5001";
+
+  // Handle search with debounce
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setHasSearched(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/search`, {
+          params: { query: searchQuery },
+          timeout: 10000,
+        });
+        setSearchResults(Array.isArray(response.data) ? response.data : []);
+        setHasSearched(true);
+        setError(null);
+      } catch (err) {
+        console.error("Search error:", err);
+        setError("Search failed. Please try again.");
+        setSearchResults([]);
+        setHasSearched(true);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
+
   return (
     <>
       {/* Title and Search Bar */}
       <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-8">
-        {/* Title and Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
           {/* Logo */}
           <img src={logo} className="w-[250px] md:w-[400px]" alt="logo" />
@@ -74,8 +128,10 @@ const Register = () => {
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
-                placeholder="Country, Area, District..."
+                placeholder="Search properties or services..."
                 className="w-full px-4 py-2 text-[#000000] text-sm bg-[#f5f5f5] focus:outline-none"
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
             </div>
 
@@ -84,7 +140,7 @@ const Register = () => {
               <FaSearch className="font-thin hover:text-[#00603A]" />
             </button>
 
-            {/* Menu Icon (Visible on all screen sizes) */}
+            {/* Menu Icon */}
             <button className="p-2" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? (
                 <X className="w-6 h-6 text-[#000000]" />
@@ -95,33 +151,32 @@ const Register = () => {
           </div>
         </div>
         {menuOpen && (
-          <div className="mt-2  ">
-            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
+          <div className="mt-2">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12 md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
                 { name: "Penthouses", href: "/penthouses" },
                 { name: "Developments", href: "/newdevelopment" },
-                // { name: "Development", href: "/listingpage" },
                 { name: "Magazine", href: "/magazine" },
                 { name: "Luxe Collectibles", href: "/listedcollectibles" },
               ].map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
-                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A]  text-lg"
+                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A] text-lg"
                 >
                   {link.name}
                 </a>
               ))}
 
               <p
-                className="flex justify-start border-t border-[#000000]  space-x-0 mt-3 pt-4 "
+                className="flex justify-start border-t border-[#000000] space-x-0 mt-3 pt-4"
                 style={{ textTransform: "capitalize" }}
               >
                 FOLLOW THE MANSION MARKET
               </p>
-              <div className="flex justify-start  mt-4 py-4 space-x-6 mb-2 ">
+              <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
                 <a
                   href="#"
                   className="text-[#00603A] hover:text-gray-400 text-2xl"
@@ -161,6 +216,34 @@ const Register = () => {
             </div>
           </div>
         )}
+        {/* Search Results Section */}
+        {hasSearched && searchQuery.trim() && (
+          <section className="w-full mt-8 px-4 md:px-10 lg:px-20 py-12">
+            <h2 className="text-3xl font-playfair text-[#00603A] text-center mb-8">
+              {loading ? "Searching..." : `Results for "${searchQuery}"`}
+            </h2>
+            {loading ? (
+              <p className="text-center text-gray-600">Searching properties...</p>
+            ) : error ? (
+              <p className="text-center text-red-600">{error}</p>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">
+                  No properties found matching all terms: "{searchQuery}"
+                </p>
+                <p className="text-gray-500">
+                  Try different combinations of location, community, or property type
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchResults.map((mansion) => (
+                  <MansionCard key={mansion.reference} mansion={mansion} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
 
       <div className="relative w-full h-screen">
@@ -169,10 +252,9 @@ const Register = () => {
           alt="Background"
           className="absolute inset-0 w-full h-full object-cover"
         />
-
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
         <div className="absolute inset-0 flex items-center justify-center p-8">
-          <h1 className="text-white text-3xl md:text-5xl w-full max-w-[900px] leading-[1 !leading-[1] text-center font-playfair px-4">
+          <h1 className="text-white text-3xl md:text-5xl w-full max-w-[900px] leading-[1] text-center font-playfair px-4">
             Connect with the best luxury real estate marketplace worldwide.
           </h1>
         </div>
@@ -180,86 +262,40 @@ const Register = () => {
 
       <div className="flex flex-col items-center justify-center min-h-screen px-6 py-16 bg-gray-50">
         <div className="max-w-2xl text-center space-y-8 font-inter">
-          <p className="text-lg  text-center font-inter pb-8 leading-[2] ">
+          <p className="text-lg text-center font-inter pb-8 leading-[2]">
             Become a part of an elite marketplace for ultra-luxurious mansions
             and penthouses. Our exclusive platform draws ultra-high-net-worth
             buyers who seek unparalleled quality and distinction in their homes.
           </p>
-          <p className="text-lg  text-center font-inter pb-8 leading-[2]">
+          <p className="text-lg text-center font-inter pb-8 leading-[2]">
             With a commitment to excellence, we carefully curate listings,
             focusing on exceptional properties located in the city’s most
             prestigious areas.
           </p>
-          <p className="text-lg  text-center font-inter pb-8 leading-[2]">
+          <p className="text-lg text-center font-inter pb-8 leading-[2]">
             Who can join our distinguished marketplace? Individual agents,
             agencies, holiday home operators, property developers, and property
             owners.
           </p>
         </div>
-
         <div className="mt-8">
-          <button className="font-inter px-6 py-3 w-full md:w-[500px]  font-inter px-20 py-3 text-black  border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300   transition duration-300">
+          <button className="font-inter px-6 py-3 w-full md:w-[500px] text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
             Register Now
           </button>
         </div>
       </div>
 
-      {/* <div className="px-4 md:px-8 lg:px-20 py-12 border-t border-b border-[#00603A]">
-       
-        <h2 className="text-2xl md:text-3xl text-center  text-[#00603A] font-playfair mt-2 mb-6">
-          Newly Listed Penthouses
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 py-8">
-          {listings1.map((listing) => (
-            <div key={listing.id} className="overflow-hidden">
-          
-              <img
-                src={listing.imageUrl}
-                alt={listing.location}
-                className="w-full h-96 object-cover"
-              />
+     
 
-          
-              <div className="py-4">
-                <p className="text-black font-inter font-bold text-lg">
-                  {listing.price}
-                </p>
-            
-                <p className="font-inter text-gray-700 text-sm mt-2 mb-2">
-                  {listing.bedrooms} Beds | {listing.bathrooms} Baths |{" "}
-                  {listing.size} sqft
-                </p>
-                <p className="font-inter text-gray-500 text-sm mb-2 mt-2">
-                  {listing.name}
-                </p>
-                <p className="font-inter text-gray-700 text-sm mt-2">
-                  {listing.location}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+      <AboutPageListing />
 
-        <div className="flex flex-col md:flex-row items-center justify-between mt-8 space-y-6 gap-4 md:space-y-0">
-          <p className="text-gray-600 text-center md:text-left max-w-2xl font-inter">
-            Discover the exquisite mansions and penthouses that are currently in
-            the spotlight and newly available. This curated collection showcases
-            the most sought-after properties on the market right now.
-          </p>
-          <button className="px-20 py-3 mr-0 ffont-inter px-20 py-3 text-black  border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
-            Discover all
-          </button>
-        </div>
-      </div> */}
-      <AboutPageListing searchQuery={searchQuery} />
-
-      <div className="flex flex-col md:flex-row items-center px-4 md:px-8   gap-8 py-12 space-y-8 md:space-y-0 mt-20 mb-24 ">
+      <div className="flex flex-col md:flex-row items-center px-4 md:px-8 gap-8 py-12 space-y-8 md:space-y-0 mt-20 mb-24">
         {/* Image Section */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
             src={image}
             alt="Mansion Market Magazine"
-            className="w-full md:w-[70%] lg:w-[80%] h-auto  "
+            className="w-full md:w-[70%] lg:w-[80%] h-auto"
           />
         </div>
 
@@ -276,7 +312,7 @@ const Register = () => {
             beyond.
           </p>
           <Link to="/magazine">
-            <button className="px-8 py-3 w-full mt-6 md:w-[300px] font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
+            <button className="px-8 py-3 w-full mt-6 md:w-[300px] font-inter text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300">
               Explore magazine
             </button>
           </Link>

@@ -28,14 +28,15 @@ const MagazineCollection = () => {
       const fetchIconicData = async () => {
         try {
           const res = await axios.get(`${BASE_URL}/api/iconic`);
-          // Assuming the API returns an array, take the first item (or adjust based on your needs)
           if (res.data && res.data.length > 0) {
-            setIconicData(res.data[0]); // Set the first item from the response
+            const sortedData = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setIconicData(sortedData[0]); // latest item
           }
         } catch (err) {
           console.error("Error fetching iconic data:", err);
         }
       };
+      
   
       fetchIconicData();
     }, []); // Empty dependency array to run only on mount

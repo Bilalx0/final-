@@ -1,19 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch } from "react-icons/fa";
 import Footer from "../components/Footer";
 import "react-world-flags"; // Ensure this library is installed in your project
 import logo from "../assests/TMM-LANDING PAGE 1.svg";
 import { Menu, X } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6"; // Impor
+import { FaXTwitter } from "react-icons/fa6";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import axios from "axios";
+import MansionCard from "../components/Card";
 
 const ContactUs = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [phonenumber, setphonenumber] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const searchTimeoutRef = useRef(null);
+
+  const BASE_URL =
+    process.env.NODE_ENV === "production"
+      ? "https://backend-5kh4.onrender.com"
+      : "http://localhost:5001";
+
+  // Handle phone number change
   const handleChangenumber = (value) => {
     setphonenumber(value);
+  };
+
+  // Handle search with debounce
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setHasSearched(false);
+      setError(null);
+      return;
+    }
+
+    setLoading(true);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/search`, {
+          params: { query: searchQuery },
+          timeout: 10000,
+        });
+        setSearchResults(Array.isArray(response.data) ? response.data : []);
+        setHasSearched(true);
+        setError(null);
+      } catch (err) {
+        console.error("Search error:", err);
+        setError("Search failed. Please try again.");
+        setSearchResults([]);
+        setHasSearched(true);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -29,8 +89,10 @@ const ContactUs = () => {
             <div className="flex items-center w-full md:w-[300px] border border-[#000000] overflow-hidden shadow-sm">
               <input
                 type="text"
-                placeholder="Country, Area, District..."
+                placeholder="Search properties or services..."
                 className="w-full px-4 py-2 text-[#000000] text-sm bg-[#f5f5f5] focus:outline-none"
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
             </div>
 
@@ -39,7 +101,7 @@ const ContactUs = () => {
               <FaSearch className="font-thin hover:text-[#00603A]" />
             </button>
 
-            {/* Menu Icon (Visible on all screen sizes) */}
+            {/* Menu Icon */}
             <button className="p-2" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? (
                 <X className="w-6 h-6 text-[#000000]" />
@@ -50,10 +112,10 @@ const ContactUs = () => {
           </div>
         </div>
 
-        {/* Navigation Popup (Works on all screen sizes) */}
+        {/* Navigation Popup */}
         {menuOpen && (
-          <div className="">
-            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12  md:px-20">
+          <div className="mt-2">
+            <div className="bg-white shadow-md p-4 z-50 absolute w-full right-0 px-12 md:px-20">
               {[
                 { name: "Home", href: "/" },
                 { name: "Mansions", href: "/mansions" },
@@ -65,19 +127,19 @@ const ContactUs = () => {
                 <a
                   key={index}
                   href={link.href}
-                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A]  text-lg"
+                  className="block font-inter py-2 text-gray-800 hover:text-[#00603A] text-lg"
                 >
                   {link.name}
                 </a>
               ))}
 
               <p
-                className="flex justify-start border-t border-[#000000]  space-x-0 mt-3 pt-4 "
+                className="flex justify-start border-t border-[#000000] space-x-0 mt-3 pt-4"
                 style={{ textTransform: "capitalize" }}
               >
                 FOLLOW THE MANSION MARKET
               </p>
-              <div className="flex justify-start  mt-4 py-4 space-x-6 mb-2 ">
+              <div className="flex justify-start mt-4 py-4 space-x-6 mb-2">
                 <a
                   href="#"
                   className="text-[#00603A] hover:text-gray-400 text-2xl"
@@ -117,13 +179,43 @@ const ContactUs = () => {
             </div>
           </div>
         )}
+
+        {/* Search Results Section */}
+        {hasSearched && searchQuery.trim() && (
+          <section className="w-full mt-8 px-4 md:px-10 lg:px-20 py-12">
+            <h2 className="text-3xl font-playfair text-[#00603A] text-center mb-8">
+              {loading ? "Searching..." : `Results for "${searchQuery}"`}
+            </h2>
+            {loading ? (
+              <p className="text-center text-gray-600">Searching properties...</p>
+            ) : error ? (
+              <p className="text-center text-red-600">{error}</p>
+            ) : searchResults.length === 0 ? (
+              <div className="text-center">
+                <p className="text-gray-600 mb-4">
+                  No properties found matching all terms: "{searchQuery}"
+                </p>
+                <p className="text-gray-500">
+                  Try different combinations of location, community, or property type
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {searchResults.map((mansion) => (
+                  <MansionCard key={mansion.reference} mansion={mansion} />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
+
       <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-12">
         <div className="container mx-auto p-4">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-12 lg:space-y-0 lg:space-x-12">
             {/* Contact Text */}
             <div className="lg:w-1/2 space-y-4">
-              <h2 className="text-3xl  text-[#00603A] font-playfair">
+              <h2 className="text-3xl text-[#00603A] font-playfair">
                 Contact Us
               </h2>
               <p className="text-lg text-gray-600 leading-relaxed font-inter leading-[2]">
@@ -134,17 +226,17 @@ const ContactUs = () => {
             </div>
 
             {/* Form Section */}
-            <div className="lg:w-1/2 w-full  p-6  space-y-6">
+            <div className="lg:w-1/2 w-full p-6 space-y-6">
               <form className="space-y-6">
                 <input
                   type="text"
-                  className="w-full p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
+                  className="w-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
                   placeholder="Full name"
                   aria-label="Full name"
                 />
                 <input
                   type="email"
-                  className="w-full p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
+                  className="w-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
                   placeholder="E-mail address"
                   aria-label="E-mail address"
                 />
@@ -168,7 +260,7 @@ const ContactUs = () => {
                   />
                 </div>
                 <select
-                  className="w-full p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
+                  className="w-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
                   aria-label="Subject"
                 >
                   <option value="buy-property">
@@ -181,7 +273,7 @@ const ContactUs = () => {
                   </option>
                 </select>
                 <select
-                  className="w-full p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
+                  className="w-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
                   aria-label="Location"
                 >
                   <option value="dubai">Dubai</option>
@@ -190,14 +282,14 @@ const ContactUs = () => {
                 </select>
                 <textarea
                   rows="4"
-                  className="w-full p-3 border  border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
+                  className="w-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#00603A]"
                   placeholder="Your message"
                   aria-label="Your message"
                 ></textarea>
                 <div className="flex flex-col items-start space-y-4">
                   <button
                     type="submit"
-                    className="w-full font-inter px-20 py-3 text-black  border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
+                    className="w-full font-inter px-20 py-3 text-black border border-[#00603A] hover:bg-[#00603A] hover:text-white transition-all duration-300"
                   >
                     Submit Enquiry
                   </button>

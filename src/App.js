@@ -35,6 +35,9 @@ import Admin from "./pages/Admin";
 import LuxeCollectibles from "./pages/LuxeCollectibles";
 import { CollectiblesProvider } from "./context/CollectibleContext";
 import IconicForm from "./pages/IconicForm";
+import UserForm from "./components/Auth/UserForm";
+
+
 
 function App() {
   const isAuthenticated = () => {
@@ -62,6 +65,9 @@ function App() {
             <Route path="/newdevelopment" element={<NewDevelopment />} />
             <Route path="/collectivelisting" element={<CollectiveListing />} />
             <Route path="/listedcollectibles" element={<LuxeCollectibles />} />
+
+            <Route path="/userform" element={<UserForm />} />
+        <Route path="/userform/:id" element={<UserForm />} />
 
             {/* Form Routes */}
             <Route path="/create-post" element={<CreatePost />} />
