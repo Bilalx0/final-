@@ -266,9 +266,10 @@ const MansionForm = () => {
         setAgentImage(null);
         setDescriptionCharCount(0); // Reset char count
         document.querySelectorAll('input[type="file"]').forEach((input) => (input.value = ""));
-      } else {
-        navigate(`/dashboard`);
-      }
+      } 
+
+      navigate("/dashboard");
+
     } catch (error) {
       console.error("Submission error details:", {
         message: error.message,

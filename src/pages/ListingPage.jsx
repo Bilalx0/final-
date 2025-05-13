@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useMansions } from "../context/MansionContext";
+import PropertyLocationMap from "../components/PropertyLocationMap";
 import {
   ArrowUp,
   X,
@@ -37,8 +37,17 @@ import MansionCard from "../components/Card";
 import Footer from "../components/Footer";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-
+// Fix for Leaflet default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 const ListingPage = () => {
   const [phonenumber, setphonenumber] = useState("");
@@ -75,13 +84,17 @@ const ListingPage = () => {
   const searchTimeoutRef = useRef(null);
   const menuRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
+  // State for map coordinates and geocoding status
+  const [coordinates, setCoordinates] = useState({ lat: 25.2048, lng: 55.2708 }); // Default to Dubai
+  const [mapLoading, setMapLoading] = useState(true);
+  const [mapError, setMapError] = useState(null);
 
   // Disable body scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden"; // Prevent background scrolling
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "auto"; // Restore scrolling
+      document.body.style.overflow = "auto";
     }
   }, [isOpen]);
 
@@ -112,68 +125,6 @@ const ListingPage = () => {
     };
   }, []);
 
-  // Search with debounce
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      setHasSearched(false);
-      setSearchError(null);
-      return;
-    }
-
-    setSearchLoading(true);
-    searchTimeoutRef.current = setTimeout(async () => {
-      try {
-        const response = await axios.get(`${BASE_URL}/api/search`, {
-          params: { query: searchQuery },
-          timeout: 10000,
-        });
-        setSearchResults(Array.isArray(response.data) ? response.data : []);
-        setHasSearched(true);
-        setSearchError(null);
-      } catch (err) {
-        console.error("Search error:", err);
-        setSearchError("Search failed. Please try again.");
-        setSearchResults([]);
-        setHasSearched(true);
-      } finally {
-        setSearchLoading(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(searchTimeoutRef.current);
-  }, [searchQuery]);
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00603A]"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 max-w-3xl mx-auto text-center">
-        <div className="bg-red-50 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-red-700">
-            Error loading property
-          </h2>
-          <p className="text-red-600 mt-2">
-            {error.message || "Please try again later."}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const property = mansions?.find((m) => m.reference === reference) || {
     propertytype: "Mansion",
@@ -214,6 +165,115 @@ const ListingPage = () => {
     agentImage: newImage1,
     category: "Luxury Villa",
   };
+  
+
+
+  // Search with debounce
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setHasSearched(false);
+      setSearchError(null);
+      return;
+    }
+
+    setSearchLoading(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/search`, {
+          params: { query: searchQuery },
+          timeout: 10000,
+        });
+        setSearchResults(Array.isArray(response.data) ? response.data : []);
+        setHasSearched(true);
+        setSearchError(null);
+      } catch (err) {
+        console.error("Search error:", err);
+        setSearchError("Search failed. Please try again.");
+        setSearchResults([]);
+        setHasSearched(true);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(searchTimeoutRef.current);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const fetchCoordinates = async () => {
+      if (!property?.propertyaddress && !property?.community && !property?.subcommunity) {
+        setMapLoading(false);
+        setMapError("No valid address provided");
+        return;
+      }
+
+      const address = [
+        property?.propertyaddress,
+        property?.subcommunity,
+        property?.community,
+        property?.country,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      try {
+        const response = await axios.get(
+          `https://nominatim.openstreetmap.org/search`,
+          {
+            params: {
+              q: address,
+              format: "json",
+              limit: 1,
+            },
+            headers: {
+              "User-Agent": "TheMansionMarket/1.0 (contact@yourapp.com)", // Required by Nominatim
+            },
+          }
+        );
+
+        if (response.data && response.data.length > 0) {
+          const { lat, lon } = response.data[0];
+          setCoordinates({ lat: parseFloat(lat), lng: parseFloat(lon) });
+          setMapError(null);
+        } else {
+          setMapError("Could not find location");
+        }
+      } catch (err) {
+        console.error("Geocoding error:", err);
+        setMapError("Failed to load map location");
+      } finally {
+        setMapLoading(false);
+      }
+    };
+
+    fetchCoordinates();
+  }, [property]);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (error) {
+    return (
+      <div className="p-4 max-w-3xl mx-auto text-center">
+        <div className="bg-red-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-red-700">
+            Error loading property
+          </h2>
+          <p className="text-red-600 mt-2">
+            {error.message || "Please try again later."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+
 
   // Dynamic similar listings
   const similarListings = mansions
@@ -296,6 +356,8 @@ const ListingPage = () => {
     );
   };
 
+  
+
   const shareToFacebook = () => {
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
@@ -343,7 +405,6 @@ const ListingPage = () => {
 
   const isCollectible = property.propertytype === "Luxury Collectibles";
 
-  // Determine the location text for Luxury Collectibles
   let locationText = "";
   if (isCollectible) {
     const community = property.community || property.location || "N/A";
@@ -358,7 +419,6 @@ const ListingPage = () => {
     }, ${property.subcommunity || "N/A"}`;
   }
 
-  // Fallback for Luxury Collectibles if location is unavailable
   const fallbackText =
     isCollectible && locationText === "Location unavailable"
       ? property.category ||
@@ -368,7 +428,7 @@ const ListingPage = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 space-y-8 font-inter">
+      <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 py-12 font-inter">
         {/* Header with Logo and Search Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6 relative">
           <img
@@ -536,11 +596,11 @@ const ListingPage = () => {
             className="absolute inset-0 w-full h-full object-cover"
           />
           <button
-        onClick={() => setIsOpen(true)}
-        className="absolute bottom-8 right-16 bg-white bg-opacity-75 hover:text-white text-black px-8 py-2 border border-[#00603A] hover:bg-[#00603A] transition-all duration-300"
-      >
-        Show All Photos
-      </button>
+            onClick={() => setIsOpen(true)}
+            className="absolute bottom-8 right-16 bg-white bg-opacity-75 hover:text-white text-black px-8 py-2 border border-[#00603A] hover:bg-[#00603A] transition-all duration-300"
+          >
+            Show All Photos
+          </button>
         </div>
 
         {/* Main Content */}
@@ -658,18 +718,7 @@ const ListingPage = () => {
 
                 {/* Location Map */}
                 <div className="text-start mt-4">
-                  <h2 className="text-3xl mb-8 font-playfair text-[#00603A]">
-                    Location Map
-                  </h2>
-                  <div className="w-full relative">
-                    <iframe
-                      className="w-full h-64 border-0 rounded-none"
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3623.496236789558!2d55.270782315318835!3d25.2048499838886!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e5f4347f51ff62d%3A0x9e2df8d4d7e8f12a!2sDubai!5e0!3m2!1sen!2sae!4v1631234567890!5m2!1sen!2sae"
-                      allowFullScreen
-                      loading="lazy"
-                      title="map"
-                    ></iframe>
-                  </div>
+                  <PropertyLocationMap property={property} />
                 </div>
               </>
             )}
@@ -803,7 +852,6 @@ const ListingPage = () => {
                     <textarea
                       name="message"
                       placeholder="I'd like to have more information about this property..."
-                      required
                       className="border p-2 w-full mt-4 border-gray-300 focus:outline-none focus:ring-1 focus:ring-[#00603A]"
                       rows="4"
                       value={formData.message}
@@ -939,71 +987,70 @@ const ListingPage = () => {
           </button>
         )}
         {isOpen && (
-        <div className="fixed inset-0 flex justify-center items-start z-50  bg-white overflow-y-auto">
-          {/* Fixed Close Button */}
-          <button
-            onClick={() => setIsOpen(false)}
-            className="fixed top-4 right-8 text-[#000000] hover:text-[#00603A] px-3 py-1 rounded-md text-xl z-50"
-          >
-            ✕
-          </button>
+          <div className="fixed inset-0 flex justify-center items-start z-50 bg-white overflow-y-auto">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="fixed top-4 right-8 text-[#000000] hover:text-[#00603A] px-3 py-1 rounded-md text-xl z-50"
+            >
+              ✕
+            </button>
 
-          {/* Modal Content (Moved Down) */}
-          <div className="relative p-5 w-full mt-16 mb-8  ">
-            {/* Images and Text Layout */}
-            <div className="flex flex-col md:flex-row gap-4 md:h-auto">
-              {/* 🟢 Images Container (First on mobile, second on desktop) */}
-              <div className="flex flex-col w-full md:w-[75%] order-1 md:order-2">
-                {property.images.map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Image ${index + 1}`}
-                    className="w-full h-auto mb-4"
-                  />
-                ))}
-              </div>
-
-              {/* 🟢 Text Container (Second on mobile, first on desktop) */}
-              <div className="w-full md:w-[25%] p-4 md:sticky md:top-4 self-start order-2 md:order-1">
-                <div className="flex flex-col  mt-4 py-6 md:mt-6  md:space-y-0">
-                  <h3 className="text-3xl font-playfair break-words text-[#000000] mb-8 bg-white">
-                  {property.title || "Untitled Property"}
-                  </h3>
-
-                  <p className="text-base break-words font-inter pt-8 border-t border-[#00603A]">
-                    {property.propertytype || "Property Type"} | {property.bedrooms || "Bedrooms"} beds | {property.bathrooms || "Bathrooms"} baths | {property.area || "Area"} sq. ft. | {property.plotarea || "Plot Area"} sq. ft. plot
-                  </p>
+            <div className="relative p-5 w-full mt-16 mb-8">
+              <div className="flex flex-col md:flex-row gap-4 md:h-auto">
+                <div className="flex flex-col w-full md:w-[75%] order-1 md:order-2">
+                  {property.images.map((img, index) => (
+                    <img
+                      key={index}
+                      src={img}
+                      alt={`Image ${index + 1}`}
+                      className="w-full h-auto mb-4"
+                    />
+                  ))}
                 </div>
 
-                <div className="flex gap-2 mt-4 border-b pb-4">
-                      <a
-                        href={`https://wa.me/${
-                          property.whatsaapno ||
-                          property.whatsappNo ||
-                          "+971501234567"
-                        }`}
-                        className="text-[#00603A] font-inter flex items-center space-x-1"
-                      >
-                        <FaWhatsapp />
-                        <span>WhatsApp</span>
-                      </a>
-                      <span className="text-[#f5f5f5]">|</span>
-                      <a
-                        href={`tel:${
-                          property.callno || property.callNo || "+971501234567"
-                        }`}
-                        className="text-[#00603A] font-inter flex items-center space-x-1"
-                      >
-                        <FaPhoneAlt />
-                        <span>Call</span>
-                      </a>
-                    </div>
+                <div className="w-full md:w-[25%] p-4 md:sticky md:top-4 self-start order-2 md:order-1">
+                  <div className="flex flex-col mt-4 py-6 md:mt-6 md:space-y-0">
+                    <h3 className="text-3xl font-playfair break-words text-[#000000] mb-8 bg-white">
+                      {property.title || "Untitled Property"}
+                    </h3>
+
+                    <p className="text-base break-words font-inter pt-8 border-t border-[#00603A]">
+                      {property.propertytype || "Property Type"} |{" "}
+                      {property.bedrooms || "Bedrooms"} beds |{" "}
+                      {property.bathrooms || "Bathrooms"} baths |{" "}
+                      {property.area || "Area"} sq. ft. |{" "}
+                      {property.plotarea || "Plot Area"} sq. ft. plot
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2 mt-4 border-b pb-4">
+                    <a
+                      href={`https://wa.me/${
+                        property.whatsaapno ||
+                        property.whatsappNo ||
+                        "+971501234567"
+                      }`}
+                      className="text-[#00603A] font-inter flex items-center space-x-1"
+                    >
+                      <FaWhatsapp />
+                      <span>WhatsApp</span>
+                    </a>
+                    <span className="text-[#f5f5f5]">|</span>
+                    <a
+                      href={`tel:${
+                        property.callno || property.callNo || "+971501234567"
+                      }`}
+                      className="text-[#00603A] font-inter flex items-center space-x-1"
+                    >
+                      <FaPhoneAlt />
+                      <span>Call</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
       <Footer />
     </>
